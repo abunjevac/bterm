@@ -65,7 +65,13 @@ func (pa *paneArea) allocID() int {
 // registerTerm stores a terminal and wires its lifecycle callbacks.
 func (pa *paneArea) registerTerm(id int, t terminal.Terminal) {
 	pa.terms[id] = t
-	pa.widgets[id] = t.Widget()
+
+	w := t.Widget()
+
+	gtk.BaseWidget(w).SetVExpand(true)
+	gtk.BaseWidget(w).SetHExpand(true)
+
+	pa.widgets[id] = w
 
 	t.OnChildExited(func(_ int) {
 		pa.closeID(id)
