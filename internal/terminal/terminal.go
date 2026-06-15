@@ -16,6 +16,7 @@ type Terminal interface {
 	SetFont(family string, size float64)
 	SetColors(p *theme.Palette)
 	SetScrollback(lines int)
+	SetSize(columns, rows int)
 	CurrentDir() string
 	Copy()
 	Paste()

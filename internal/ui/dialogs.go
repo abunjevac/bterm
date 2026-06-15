@@ -103,8 +103,8 @@ func (f *configForm) collect(base config.Config) config.Config {
 	}
 
 	next.Scrollback = int(f.scrollbackSpin.Value())
-	next.WindowWidth = int(f.widthSpin.Value())
-	next.WindowHeight = int(f.heightSpin.Value())
+	next.WindowColumns = int(f.widthSpin.Value())
+	next.WindowRows = int(f.heightSpin.Value())
 	next.Title = f.titleEntry.Text()
 
 	return next
@@ -134,61 +134,49 @@ func buildConfigForm(cfg config.Config) (*gtk.ScrolledWindow, configForm) {
 		row++
 	}
 
-	fontEntry := cfgEntry(cfg.Font, "")
+	var f configForm
 
-	attach("Font", fontEntry)
+	f.fontEntry = cfgEntry(cfg.Font, "")
 
-	fontSizeSpin := gtk.NewSpinButtonWithRange(4, 72, 0.5)
+	attach("Font", f.fontEntry)
 
-	fontSizeSpin.SetValue(cfg.FontSize)
-	fontSizeSpin.SetDigits(1)
+	f.fontSizeSpin = gtk.NewSpinButtonWithRange(4, 72, 0.5)
+	f.fontSizeSpin.SetValue(cfg.FontSize)
+	f.fontSizeSpin.SetDigits(1)
 
-	attach("Font size", fontSizeSpin)
+	attach("Font size", f.fontSizeSpin)
 
-	themes := theme.BuiltinNames()
+	f.themes = theme.BuiltinNames()
+	f.themeDD = gtk.NewDropDownFromStrings(f.themes)
+	f.themeDD.SetSelected(cfgThemeIndex(f.themes, cfg.Theme))
 
-	themeDD := gtk.NewDropDownFromStrings(themes)
+	attach("Theme", f.themeDD)
 
-	themeDD.SetSelected(cfgThemeIndex(themes, cfg.Theme))
+	f.shellEntry = cfgEntry(cfg.Shell, "auto-detect from $SHELL")
 
-	attach("Theme", themeDD)
+	attach("Shell", f.shellEntry)
 
-	shellEntry := cfgEntry(cfg.Shell, "auto-detect from $SHELL")
+	f.shellArgsEntry = cfgEntry(strings.Join(cfg.ShellArgs, " "), "-l")
 
-	attach("Shell", shellEntry)
+	attach("Shell args", f.shellArgsEntry)
 
-	shellArgsEntry := cfgEntry(strings.Join(cfg.ShellArgs, " "), "-l")
+	f.scrollbackSpin = cfgSpin(100, 200000, 100, float64(cfg.Scrollback))
 
-	attach("Shell args", shellArgsEntry)
+	attach("Scrollback lines", f.scrollbackSpin)
 
-	scrollbackSpin := cfgSpin(100, 200000, 100, float64(cfg.Scrollback))
+	f.widthSpin = cfgSpin(40, 500, 1, float64(cfg.WindowColumns))
 
-	attach("Scrollback lines", scrollbackSpin)
+	attach("Window columns", f.widthSpin)
 
-	widthSpin := cfgSpin(200, 4000, 10, float64(cfg.WindowWidth))
+	f.heightSpin = cfgSpin(10, 200, 1, float64(cfg.WindowRows))
 
-	attach("Window width", widthSpin)
+	attach("Window rows", f.heightSpin)
 
-	heightSpin := cfgSpin(200, 3000, 10, float64(cfg.WindowHeight))
+	f.titleEntry = cfgEntry(cfg.Title, "bterm")
 
-	attach("Window height", heightSpin)
+	attach("Default title", f.titleEntry)
 
-	titleEntry := cfgEntry(cfg.Title, "bterm")
-
-	attach("Default title", titleEntry)
-
-	return cfgScroll(grid), configForm{
-		fontEntry:      fontEntry,
-		fontSizeSpin:   fontSizeSpin,
-		themeDD:        themeDD,
-		themes:         themes,
-		shellEntry:     shellEntry,
-		shellArgsEntry: shellArgsEntry,
-		scrollbackSpin: scrollbackSpin,
-		widthSpin:      widthSpin,
-		heightSpin:     heightSpin,
-		titleEntry:     titleEntry,
-	}
+	return cfgScroll(grid), f
 }
 
 func cfgScroll(child gtk.Widgetter) *gtk.ScrolledWindow {

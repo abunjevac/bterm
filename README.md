@@ -105,15 +105,15 @@ Open `config.toml` from within bterm via **Open Config** in the hamburger menu o
 ### config.toml
 
 ```toml
-font          = "Monospace"
-font_size     = 12.0
-theme         = "dracula"
-shell         = ""          # defaults to $SHELL
-shell_args    = ["-l"]
-scrollback    = 10000
-window_width  = 1200
-window_height = 800
-title         = "bterm"
+font           = "Monospace"
+font_size      = 12.0
+theme          = "dracula"
+shell          = ""          # defaults to $SHELL
+shell_args     = ["-l"]
+scrollback     = 10000
+window_columns = 180
+window_rows    = 40
+title          = "bterm"
 ```
 
 ---

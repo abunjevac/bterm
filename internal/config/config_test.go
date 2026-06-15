@@ -17,12 +17,12 @@ func TestParseAppliesDefaults(t *testing.T) {
 	cfg, err := config.Parse("")
 	require.NoError(t, err)
 
-	require.Equal(t, "Monospace", cfg.Font)
-	require.InEpsilon(t, 12.0, cfg.FontSize, 0.001)
-	require.Equal(t, "dracula", cfg.Theme)
+	require.Equal(t, "Google Sans Code", cfg.Font)
+	require.InEpsilon(t, 16.0, cfg.FontSize, 0.001)
+	require.Equal(t, "ayu", cfg.Theme)
 	require.Equal(t, 5000, cfg.Scrollback)
-	require.Equal(t, 1200, cfg.WindowWidth)
-	require.Equal(t, 800, cfg.WindowHeight)
+	require.Equal(t, 180, cfg.WindowColumns)
+	require.Equal(t, 40, cfg.WindowRows)
 }
 
 func TestParseOverrides(t *testing.T) {

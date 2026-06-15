@@ -17,3 +17,4 @@ const char *vteGetCurrentDirUri(VteTerminal *terminal);
 char *vteGetWindowTitle(VteTerminal *terminal);
 void vteCopyClipboard(VteTerminal *terminal);
 void vtePasteClipboard(VteTerminal *terminal);
+void vteSetSize(VteTerminal *terminal, int columns, int rows);

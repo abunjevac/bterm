@@ -49,7 +49,6 @@ func newWindow(_ context.Context, app *gtk.Application, bundle *config.Bundle) *
 	w.win = gtk.NewApplicationWindow(app)
 
 	w.win.SetTitle(cfg.Title)
-	w.win.SetDefaultSize(cfg.WindowWidth, cfg.WindowHeight)
 	w.win.SetIconName("io.github.abunjevac.bterm")
 
 	applyStyle(w.palette)
@@ -78,6 +77,11 @@ func (w *window) spawnTerm(t terminal.Terminal, workingDir string) {
 	t.SetFont(w.fontFamily, w.fontSize)
 	t.SetColors(w.palette)
 	t.SetScrollback(cfg.Scrollback)
+
+	if len(w.tabs) == 0 {
+		t.SetSize(cfg.WindowColumns, cfg.WindowRows)
+	}
+
 	t.Spawn(workingDir, shell, shellArgs(cfg), func(_ int, _ error) {})
 }
 

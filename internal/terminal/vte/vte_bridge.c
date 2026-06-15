@@ -121,3 +121,9 @@ void vteCopyClipboard(VteTerminal *terminal) {
 void vtePasteClipboard(VteTerminal *terminal) {
     vte_terminal_paste_clipboard(terminal);
 }
+
+/* --- size --- */
+
+void vteSetSize(VteTerminal *terminal, int columns, int rows) {
+    vte_terminal_set_size(terminal, (glong)columns, (glong)rows);
+}

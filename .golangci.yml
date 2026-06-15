@@ -25,6 +25,8 @@ linters:
   settings:
     exhaustive:
       default-signifies-exhaustive: true
+    interfacebloat:
+      max: 15
     govet:
       disable:
         - fieldalignment

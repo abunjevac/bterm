@@ -18,7 +18,7 @@ func TestBuiltinsLoad(t *testing.T) {
 	names := theme.BuiltinNames()
 
 	require.ElementsMatch(t,
-		[]string{"dracula", "catppuccin-mocha", "tokyo-night", "bterm-neon", "default"},
+		[]string{"ayu", "dracula", "catppuccin-mocha", "tokyo-night", "bterm-neon", "default"},
 		names)
 }
 

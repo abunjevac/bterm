@@ -14,15 +14,15 @@ import (
 
 // Config holds top-level bterm settings (config.toml).
 type Config struct {
-	Font         string   `toml:"font"`
-	FontSize     float64  `toml:"font_size"`
-	Theme        string   `toml:"theme"`
-	Shell        string   `toml:"shell"`
-	ShellArgs    []string `toml:"shell_args"`
-	Scrollback   int      `toml:"scrollback"`
-	WindowWidth  int      `toml:"window_width"`
-	WindowHeight int      `toml:"window_height"`
-	Title        string   `toml:"title"`
+	Font          string   `toml:"font"`
+	FontSize      float64  `toml:"font_size"`
+	Theme         string   `toml:"theme"`
+	Shell         string   `toml:"shell"`
+	ShellArgs     []string `toml:"shell_args"`
+	Scrollback    int      `toml:"scrollback"`
+	WindowColumns int      `toml:"window_columns"`
+	WindowRows    int      `toml:"window_rows"`
+	Title         string   `toml:"title"`
 }
 
 // Parse decodes config.toml content, rejecting unknown keys, then applies defaults.
@@ -54,8 +54,8 @@ func applyDefaults(cfg *Config) {
 	cfg.FontSize = cmp.Or(cfg.FontSize, 16.0)
 	cfg.Theme = cmp.Or(cfg.Theme, "ayu")
 	cfg.Scrollback = cmp.Or(cfg.Scrollback, 5000)
-	cfg.WindowWidth = cmp.Or(cfg.WindowWidth, 1200)
-	cfg.WindowHeight = cmp.Or(cfg.WindowHeight, 800)
+	cfg.WindowColumns = cmp.Or(cfg.WindowColumns, 180)
+	cfg.WindowRows = cmp.Or(cfg.WindowRows, 40)
 	cfg.Title = cmp.Or(cfg.Title, "bterm")
 }
 

@@ -115,6 +115,12 @@ func (t *Terminal) SetScrollback(lines int) {
 	C.vteSetScrollback(t.ptr, C.long(lines))
 }
 
+// SetSize sets the terminal's preferred size in character columns and rows.
+// Call before the window is presented so GTK sizes the window to fit.
+func (t *Terminal) SetSize(columns, rows int) {
+	C.vteSetSize(t.ptr, C.int(columns), C.int(rows))
+}
+
 // SetColors applies the palette to the terminal. A nil or UseSystemDefault palette is a no-op.
 func (t *Terminal) SetColors(p *theme.Palette) {
 	if p == nil || p.UseSystemDefault {
