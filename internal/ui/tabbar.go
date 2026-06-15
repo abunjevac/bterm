@@ -3,8 +3,11 @@ package ui
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
+
+	"github.com/abunjevac/bterm/internal/keymap"
 )
 
 // buildTabBar creates the GtkHeaderBar with a tab-label box and installs a
@@ -20,7 +23,7 @@ func (w *window) buildTabBar() {
 	addBtn := gtk.NewButton()
 
 	addBtn.SetIconName("list-add-symbolic")
-	addBtn.SetTooltipText("New tab (Ctrl+Shift+T)")
+	addBtn.SetTooltipText("New tab (" + formatBinding(w.keys.BindingFor(keymap.ActionNewTabEnd)) + ")")
 	addBtn.AddCSSClass("flat")
 	addBtn.ConnectClicked(func() { w.newTabEnd() })
 
@@ -207,6 +210,24 @@ func (w *window) buildMenuPopover() *gtk.Popover {
 	popover.SetChild(box)
 
 	return popover
+}
+
+// formatBinding converts a normalized binding like "ctrl+shift+t" to a
+// human-readable form like "Ctrl+Shift+T".
+func formatBinding(b string) string {
+	if b == "" {
+		return ""
+	}
+
+	parts := strings.Split(b, "+")
+
+	for i, p := range parts {
+		if len(p) > 0 {
+			parts[i] = strings.ToUpper(p[:1]) + p[1:]
+		}
+	}
+
+	return strings.Join(parts, "+")
 }
 
 // menuItem returns a flat button with a leading symbolic icon and a text label.

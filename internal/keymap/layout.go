@@ -29,6 +29,24 @@ func (l *Layout) Lookup(binding string) Action {
 	return l.bindings[binding]
 }
 
+// BindingFor returns the first key binding assigned to a, or "" when unbound.
+// When multiple bindings exist the shortest one is returned.
+func (l *Layout) BindingFor(a Action) string {
+	var best string
+
+	for binding, action := range l.bindings {
+		if action != a {
+			continue
+		}
+
+		if best == "" || len(binding) < len(best) {
+			best = binding
+		}
+	}
+
+	return best
+}
+
 // LayoutEntry pairs an action with the key bindings assigned to it.
 type LayoutEntry struct {
 	Action Action
