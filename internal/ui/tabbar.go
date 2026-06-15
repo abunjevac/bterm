@@ -30,6 +30,7 @@ func (w *window) buildTabBar() {
 
 	menuBtn.SetIconName("open-menu-symbolic")
 	menuBtn.AddCSSClass("flat")
+	menuBtn.SetPopover(w.buildMenuPopover())
 
 	header.PackEnd(menuBtn)
 
@@ -170,6 +171,55 @@ func (w *window) renumber() {
 	for i, t := range w.tabs {
 		t.numLabel.SetText(fmt.Sprintf("%d", i+1))
 	}
+}
+
+// buildMenuPopover builds the popover attached to the hamburger menu button.
+func (w *window) buildMenuPopover() *gtk.Popover {
+	box := gtk.NewBox(gtk.OrientationVertical, 0)
+
+	box.SetMarginTop(4)
+	box.SetMarginBottom(4)
+	box.SetMarginStart(4)
+	box.SetMarginEnd(4)
+
+	shortcutsBtn := menuItem("input-keyboard-symbolic", "Keyboard Shortcuts")
+
+	shortcutsBtn.ConnectClicked(func() { showShortcutsDialog(w.win, w.keys) })
+
+	box.Append(shortcutsBtn)
+
+	aboutBtn := menuItem("help-about-symbolic", "About bterm")
+
+	aboutBtn.ConnectClicked(func() { showAboutDialog(w.win) })
+
+	box.Append(aboutBtn)
+
+	popover := gtk.NewPopover()
+
+	popover.SetChild(box)
+
+	return popover
+}
+
+// menuItem returns a flat button with a leading symbolic icon and a text label.
+func menuItem(iconName, label string) *gtk.Button {
+	row := gtk.NewBox(gtk.OrientationHorizontal, 8)
+
+	img := gtk.NewImageFromIconName(iconName)
+	lbl := gtk.NewLabel(label)
+
+	lbl.SetHExpand(true)
+	lbl.SetXAlign(0)
+
+	row.Append(img)
+	row.Append(lbl)
+
+	btn := gtk.NewButton()
+
+	btn.SetChild(row)
+	btn.AddCSSClass("flat")
+
+	return btn
 }
 
 // activeCWD returns the working directory of the active tab's focused terminal,

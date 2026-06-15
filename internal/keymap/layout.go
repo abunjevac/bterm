@@ -29,6 +29,38 @@ func (l *Layout) Lookup(binding string) Action {
 	return l.bindings[binding]
 }
 
+// LayoutEntry pairs an action with the key bindings assigned to it.
+type LayoutEntry struct {
+	Action Action
+	Keys   []string
+}
+
+// Entries returns all bound actions as a slice sorted by action name, each with
+// its key bindings in sorted order. Used for displaying the shortcuts dialog.
+func (l *Layout) Entries() []LayoutEntry {
+	byAction := make(map[Action][]string, len(l.bindings))
+
+	for binding, action := range l.bindings {
+		byAction[action] = append(byAction[action], binding)
+	}
+
+	for action := range byAction {
+		sort.Strings(byAction[action])
+	}
+
+	entries := make([]LayoutEntry, 0, len(byAction))
+
+	for action, keys := range byAction {
+		entries = append(entries, LayoutEntry{Action: action, Keys: keys})
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Action.String() < entries[j].Action.String()
+	})
+
+	return entries
+}
+
 // Conflicts returns all binding strings that are bound to more than one action,
 // in sorted order. Returns nil when there are no conflicts.
 func (l *Layout) Conflicts() []string {
