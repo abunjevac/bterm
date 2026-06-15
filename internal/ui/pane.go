@@ -17,8 +17,9 @@ type paneArea struct {
 	widgets map[int]gtk.Widgetter
 	root    *gtk.Box
 	nextID  int
-	win     *window
-	onEmpty func()
+	win            *window
+	onEmpty        func()
+	onTitleChanged func(string)
 
 	// splitHintNewID / splitHintPos carry a one-shot hint from split() to
 	// buildFromDesc: set this pixel position on the GtkPaned that contains the
@@ -60,13 +61,19 @@ func (pa *paneArea) allocID() int {
 	return id
 }
 
-// registerTerm stores a terminal and wires its exit callback.
+// registerTerm stores a terminal and wires its lifecycle callbacks.
 func (pa *paneArea) registerTerm(id int, t terminal.Terminal) {
 	pa.terms[id] = t
 	pa.widgets[id] = t.Widget()
 
 	t.OnChildExited(func(_ int) {
 		pa.closeID(id)
+	})
+
+	t.OnTitleChanged(func(title string) {
+		if pa.tree.Focused() == id && pa.onTitleChanged != nil {
+			pa.onTitleChanged(title)
+		}
 	})
 }
 

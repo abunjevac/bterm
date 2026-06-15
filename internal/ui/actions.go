@@ -5,8 +5,31 @@ import (
 	"github.com/abunjevac/bterm/internal/ui/panetree"
 )
 
-// dispatch executes the action a on the active pane area.
+// dispatch executes the action a, routing tab-level actions before pane actions.
 func (w *window) dispatch(a keymap.Action) {
+	switch a {
+	case keymap.ActionNewTabEnd:
+		w.newTabEnd()
+
+		return
+	case keymap.ActionNewTabAfter:
+		w.newTabAfter()
+
+		return
+	case keymap.ActionCloseTab:
+		if len(w.tabs) > 0 {
+			w.closeTab(w.tabs[w.active])
+		}
+
+		return
+	}
+
+	if a >= keymap.ActionTab1 && a <= keymap.ActionTab9 {
+		w.selectTab(int(a - keymap.ActionTab1))
+
+		return
+	}
+
 	pa := w.current()
 
 	if pa == nil {
@@ -47,7 +70,11 @@ func (w *window) dispatch(a keymap.Action) {
 	}
 }
 
-// current returns the active paneArea.
+// current returns the active tab's paneArea, or nil when there are no tabs.
 func (w *window) current() *paneArea {
-	return w.area
+	if len(w.tabs) == 0 {
+		return nil
+	}
+
+	return w.tabs[w.active].area
 }

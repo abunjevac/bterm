@@ -18,7 +18,11 @@ type window struct {
 	win    *gtk.ApplicationWindow
 	bundle *config.Bundle
 	keys   *keymap.Layout
-	area   *paneArea
+
+	tabs   []*tab
+	active int
+	stack  *gtk.Stack
+	tabBox *gtk.Box
 
 	fontFamily      string
 	fontSize        float64
@@ -49,14 +53,8 @@ func newWindow(_ context.Context, app *gtk.Application, bundle *config.Bundle) *
 
 	applyStyle(w.palette)
 
-	term := w.newTerm()
-
-	w.spawnTerm(term, "")
-
-	w.area = newPaneArea(w, term)
-	w.area.onEmpty = func() { w.win.Close() }
-
-	w.win.SetChild(w.area.root)
+	w.buildTabBar()
+	w.newTabEnd()
 	w.installKeys()
 
 	return w.win
