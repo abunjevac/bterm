@@ -1,0 +1,66 @@
+version: '3'
+
+tasks:
+  build:
+    desc: Build bterm binary
+    vars:
+      VERSION:
+        sh: git describe --tags --abbrev=0 2>/dev/null || echo "dev"
+    cmds:
+      - go build -ldflags "-X github.com/abunjevac/bterm/internal/version.Version={{.VERSION}}" -o bterm ./cmd/bterm
+
+  run:
+    desc: Build and run bterm
+    cmds:
+      - task: build
+      - ./bterm
+
+  lint:
+    desc: Run golangci-lint and go vet
+    cmds:
+      - golangci-lint run --allow-parallel-runners --timeout 5m
+      - go vet ./...
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -count=1 ./...
+
+  scan:
+    desc: Run osv-scanner for dependency vulnerabilities
+    cmds:
+      - osv-scanner -r .
+
+  check:
+    desc: Full quality gate — lint + test + scan
+    cmds:
+      - task: lint
+      - task: test
+      - task: scan
+
+  install:
+    desc: Install bterm to $GOPATH/bin
+    cmds:
+      - go install ./cmd/bterm
+
+  install-desktop:
+    desc: Install desktop launcher and app icon for the current user
+    cmds:
+      - mkdir -p ~/.local/share/icons/hicolor/512x512/apps ~/.local/share/applications
+      - cp assets/io.github.abunjevac.bterm.png ~/.local/share/icons/hicolor/512x512/apps/io.github.abunjevac.bterm.png
+      - cp assets/io.github.abunjevac.bterm.desktop ~/.local/share/applications/io.github.abunjevac.bterm.desktop
+      - update-desktop-database ~/.local/share/applications
+      - gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor
+
+  uninstall-desktop:
+    desc: Remove desktop launcher and app icon for the current user
+    cmds:
+      - rm -f ~/.local/share/icons/hicolor/512x512/apps/io.github.abunjevac.bterm.png
+      - rm -f ~/.local/share/applications/io.github.abunjevac.bterm.desktop
+      - update-desktop-database ~/.local/share/applications
+      - gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor
+
+  tidy:
+    desc: Tidy Go modules
+    cmds:
+      - go mod tidy
