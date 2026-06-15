@@ -1,0 +1,5 @@
+foreground = "#e6edf3"
+background = "#0d1117"
+cursor = "#2dd4bf"
+accent = "#2dd4bf"
+palette = ["#161b22","#f778ba","#7ee787","#f0883e","#56d4dd","#bc8cff","#2dd4bf","#e6edf3","#484f58","#f778ba","#7ee787","#f0883e","#79c0ff","#d2a8ff","#56d4dd","#ffffff"]

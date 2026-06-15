@@ -1,0 +1,5 @@
+foreground = "#fff"
+background = "#000"
+cursor = "#fff"
+accent = "#fff"
+palette = ["#000000"]
