@@ -182,19 +182,27 @@ func (w *window) buildMenuPopover() *gtk.Popover {
 	box.SetMarginStart(4)
 	box.SetMarginEnd(4)
 
+	popover := gtk.NewPopover()
+
 	shortcutsBtn := menuItem("input-keyboard-symbolic", "Keyboard Shortcuts")
 
-	shortcutsBtn.ConnectClicked(func() { showShortcutsDialog(w.win, w.keys) })
+	shortcutsBtn.ConnectClicked(func() {
+		popover.Popdown()
+
+		showShortcutsDialog(w.win, w.keys)
+	})
 
 	box.Append(shortcutsBtn)
 
 	aboutBtn := menuItem("help-about-symbolic", "About bterm")
 
-	aboutBtn.ConnectClicked(func() { showAboutDialog(w.win) })
+	aboutBtn.ConnectClicked(func() {
+		popover.Popdown()
+
+		showAboutDialog(w.win)
+	})
 
 	box.Append(aboutBtn)
-
-	popover := gtk.NewPopover()
 
 	popover.SetChild(box)
 
