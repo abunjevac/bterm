@@ -18,6 +18,7 @@ type window struct {
 	win    *gtk.ApplicationWindow
 	bundle *config.Bundle
 	keys   *keymap.Layout
+	area   *paneArea
 
 	fontFamily      string
 	fontSize        float64
@@ -50,20 +51,30 @@ func newWindow(_ context.Context, app *gtk.Application, bundle *config.Bundle) *
 
 	term := w.newTerm()
 
-	term.SetFont(w.fontFamily, w.fontSize)
-	term.SetColors(w.palette)
-	term.SetScrollback(cfg.Scrollback)
+	w.spawnTerm(term, "")
 
-	shell := config.InferShell(cfg.Shell, os.Getenv("SHELL"))
+	w.area = newPaneArea(w, term)
+	w.area.onEmpty = func() { w.win.Close() }
 
-	home, _ := os.UserHomeDir()
-
-	term.Spawn(home, shell, shellArgs(cfg), func(_ int, _ error) {})
-	term.OnChildExited(func(_ int) { w.win.Close() })
-
-	w.win.SetChild(term.Widget())
+	w.win.SetChild(w.area.root)
+	w.installKeys()
 
 	return w.win
+}
+
+// spawnTerm configures and spawns a shell in t. An empty workingDir defaults to $HOME.
+func (w *window) spawnTerm(t terminal.Terminal, workingDir string) {
+	cfg := w.bundle.Config
+	shell := config.InferShell(cfg.Shell, os.Getenv("SHELL"))
+
+	if workingDir == "" {
+		workingDir, _ = os.UserHomeDir()
+	}
+
+	t.SetFont(w.fontFamily, w.fontSize)
+	t.SetColors(w.palette)
+	t.SetScrollback(cfg.Scrollback)
+	t.Spawn(workingDir, shell, shellArgs(cfg), func(_ int, _ error) {})
 }
 
 func shellArgs(cfg *config.Config) []string {

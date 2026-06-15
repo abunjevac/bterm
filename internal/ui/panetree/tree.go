@@ -93,14 +93,18 @@ func (t *Tree) Close(id int) {
 	}
 
 	p := n.parent
+	grandparent := p.parent
 	sib := p.a
 
 	if sib == n {
 		sib = p.b
 	}
 
-	// promote sibling into parent's slot
+	// promote sibling into parent's slot; restore grandparent link because
+	// *p = *sib would otherwise copy sib.parent (== p) into p.parent,
+	// creating a self-loop that causes Neighbor to spin forever.
 	*p = *sib
+	p.parent = grandparent
 
 	if p.a != nil {
 		p.a.parent = p

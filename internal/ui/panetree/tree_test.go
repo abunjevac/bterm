@@ -68,6 +68,32 @@ func TestNestedSplitNeighbor(t *testing.T) {
 	require.Equal(t, 2, tr.Neighbor(panetree.DirRight)) // first leaf of right subtree
 }
 
+func TestNeighborAfterClose(t *testing.T) {
+	tr := panetree.New(1)
+
+	tr.Split(panetree.LeftRight, 2) // 1 | 2, focus=2
+	tr.Close(2)                     // back to single pane
+
+	// Before fix, Close left p.parent pointing to itself, causing an infinite
+	// loop in Neighbor. Verify it terminates and returns 0.
+	require.Equal(t, 0, tr.Neighbor(panetree.DirLeft))
+	require.Equal(t, 0, tr.Neighbor(panetree.DirRight))
+	require.Equal(t, 1, tr.Focused())
+}
+
+func TestNeighborAfterCloseNested(t *testing.T) {
+	tr := panetree.New(1)
+
+	tr.Split(panetree.LeftRight, 2) // 1 | 2, focus=2
+	tr.Split(panetree.TopBottom, 3) // 1 | (2 / 3), focus=3
+	tr.Close(3)                     // back to 1 | 2
+
+	tr.SetFocus(2)
+
+	require.Equal(t, 1, tr.Neighbor(panetree.DirLeft))
+	require.Equal(t, 0, tr.Neighbor(panetree.DirRight))
+}
+
 func TestCloseMiddleNodeFocusesRemaining(t *testing.T) {
 	tr := panetree.New(1)
 
