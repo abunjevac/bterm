@@ -19,8 +19,8 @@ type Terminal interface {
 	CurrentDir() string
 	Copy()
 	Paste()
-	OnTitleChanged(func(title string))
-	OnChildExited(func(status int))
+	OnTitleChanged(fn func(title string))
+	OnChildExited(fn func(status int))
 }
 
 // Factory creates new terminals. The VTE implementation provides one.

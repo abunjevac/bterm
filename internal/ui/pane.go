@@ -17,6 +17,7 @@ type paneArea struct {
 	widgets map[int]gtk.Widgetter
 	root    *gtk.Box
 	nextID  int
+
 	win            *window
 	onEmpty        func()
 	onTitleChanged func(string)
@@ -240,6 +241,12 @@ func (pa *paneArea) rebuild() {
 	}
 }
 
+// isHintLeaf reports whether d is the newly-created pane from the last split,
+// used to identify which GtkPaned should receive the explicit position hint.
+func (pa *paneArea) isHintLeaf(d *panetree.NodeDesc) bool {
+	return d != nil && d.IsLeaf && d.ID == pa.splitHintNewID
+}
+
 // buildFromDesc recursively converts a NodeDesc into a GTK widget subtree.
 func (pa *paneArea) buildFromDesc(d *panetree.NodeDesc) gtk.Widgetter {
 	if d == nil {
@@ -276,15 +283,10 @@ func (pa *paneArea) buildFromDesc(d *panetree.NodeDesc) gtk.Widgetter {
 	// If this is the GtkPaned created by the most recent split, position it at
 	// half the focused terminal's pre-split size so both halves start equal.
 	// The new terminal's ID uniquely identifies this paned in the tree.
-	if pa.splitHintNewID != 0 && pa.splitHintPos > 0 {
-		aIsNew := d.A != nil && d.A.IsLeaf && d.A.ID == pa.splitHintNewID
-		bIsNew := d.B != nil && d.B.IsLeaf && d.B.ID == pa.splitHintNewID
+	if pa.splitHintNewID != 0 && pa.splitHintPos > 0 && (pa.isHintLeaf(d.A) || pa.isHintLeaf(d.B)) {
+		paned.SetPosition(pa.splitHintPos)
 
-		if aIsNew || bIsNew {
-			paned.SetPosition(pa.splitHintPos)
-
-			pa.splitHintNewID = 0 // consume; no other paned gets this hint
-		}
+		pa.splitHintNewID = 0
 	}
 
 	return paned

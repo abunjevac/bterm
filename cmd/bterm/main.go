@@ -29,6 +29,7 @@ func main() {
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "bterm: %v\n", err)
+
 		os.Exit(1)
 	}
 }

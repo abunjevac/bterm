@@ -44,9 +44,9 @@ func (w *window) buildTabBar() {
 	w.win.SetChild(w.stack)
 }
 
-// addTab creates a new tab with the given cwd, appends it to the tab list, and
-// returns it. It does not select it; call selectTab separately.
-func (w *window) addTab(cwd string) *tab {
+// addTab creates a new tab with the given cwd, appends it to the tab list.
+// It does not select it; call selectTab separately.
+func (w *window) addTab(cwd string) {
 	t := &tab{}
 
 	term := w.newTerm()
@@ -72,8 +72,6 @@ func (w *window) addTab(cwd string) *tab {
 	w.tabBox.Append(t.label)
 
 	w.tabs = append(w.tabs, t)
-
-	return t
 }
 
 // newTabEnd opens a new tab at the end of the tab list and selects it.

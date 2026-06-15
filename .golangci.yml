@@ -23,6 +23,8 @@ linters:
     - tagalign
     - varnamelen
   settings:
+    exhaustive:
+      default-signifies-exhaustive: true
     govet:
       disable:
         - fieldalignment

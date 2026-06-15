@@ -34,8 +34,10 @@ func (t *Tree) SetFocus(id int) {
 
 // Leaves returns all leaf ids (in-order, left/top first).
 func (t *Tree) Leaves() []int {
-	var out []int
-	var walk func(n *node)
+	var (
+		out  []int
+		walk func(n *node)
+	)
 
 	walk = func(n *node) {
 		if n == nil {
@@ -138,16 +140,24 @@ func (t *Tree) Neighbor(dir Direction) int {
 		p := cur.parent
 
 		if p.orient == wantOrient {
-			if (dir == DirLeft || dir == DirUp) && p.b == cur {
-				return t.firstLeaf(p.a).id
-			}
-
-			if (dir == DirRight || dir == DirDown) && p.a == cur {
-				return t.firstLeaf(p.b).id
+			if id := t.neighborFrom(p, cur, dir); id != 0 {
+				return id
 			}
 		}
 
 		cur = p
+	}
+
+	return 0
+}
+
+func (t *Tree) neighborFrom(p, cur *node, dir Direction) int {
+	if (dir == DirLeft || dir == DirUp) && p.b == cur {
+		return t.firstLeaf(p.a).id
+	}
+
+	if (dir == DirRight || dir == DirDown) && p.a == cur {
+		return t.firstLeaf(p.b).id
 	}
 
 	return 0

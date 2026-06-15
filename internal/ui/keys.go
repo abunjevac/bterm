@@ -14,7 +14,7 @@ func (w *window) installKeys() {
 	ctl := gtk.NewEventControllerKey()
 
 	ctl.SetPropagationPhase(gtk.PhaseCapture)
-	ctl.ConnectKeyPressed(func(keyval, _ uint, state gdk.ModifierType) (ok bool) {
+	ctl.ConnectKeyPressed(func(keyval, _ uint, state gdk.ModifierType) bool {
 		binding := buildBinding(keyval, state)
 		act := w.keys.Lookup(binding)
 

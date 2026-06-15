@@ -39,6 +39,8 @@ const (
 )
 
 // actionNames maps each Action to its TOML key (snake_case).
+//
+//nolint:gochecknoglobals
 var actionNames = map[Action]string{
 	ActionSplitLeftRight: "split_left_right",
 	ActionSplitTopBottom: "split_top_bottom",
@@ -72,8 +74,11 @@ var actionNames = map[Action]string{
 }
 
 // nameToAction is the reverse of actionNames, built once at init.
+//
+//nolint:gochecknoglobals
 var nameToAction map[string]Action
 
+//nolint:gochecknoinits
 func init() {
 	nameToAction = make(map[string]Action, len(actionNames))
 

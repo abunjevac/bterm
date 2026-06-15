@@ -5,37 +5,33 @@ import (
 	"github.com/abunjevac/bterm/internal/ui/panetree"
 )
 
-// dispatch executes the action a, routing tab-level actions before pane actions.
+// dispatch routes the action to the tab layer or, for pane-level actions,
+// to the active pane area.
 func (w *window) dispatch(a keymap.Action) {
 	switch a {
 	case keymap.ActionNewTabEnd:
 		w.newTabEnd()
-
-		return
 	case keymap.ActionNewTabAfter:
 		w.newTabAfter()
-
-		return
 	case keymap.ActionCloseTab:
 		if len(w.tabs) > 0 {
 			w.closeTab(w.tabs[w.active])
 		}
+	default:
+		if a >= keymap.ActionTab1 && a <= keymap.ActionTab9 {
+			w.selectTab(int(a - keymap.ActionTab1))
 
-		return
+			return
+		}
+
+		if pa := w.current(); pa != nil {
+			w.dispatchPane(pa, a)
+		}
 	}
+}
 
-	if a >= keymap.ActionTab1 && a <= keymap.ActionTab9 {
-		w.selectTab(int(a - keymap.ActionTab1))
-
-		return
-	}
-
-	pa := w.current()
-
-	if pa == nil {
-		return
-	}
-
+// dispatchPane routes pane-level actions to the appropriate paneArea method.
+func (w *window) dispatchPane(pa *paneArea, a keymap.Action) {
 	switch a {
 	case keymap.ActionSplitLeftRight:
 		pa.split(panetree.LeftRight)
@@ -43,6 +39,18 @@ func (w *window) dispatch(a keymap.Action) {
 		pa.split(panetree.TopBottom)
 	case keymap.ActionClosePane:
 		pa.closeFocused()
+	case keymap.ActionCopy:
+		pa.copyFromFocused()
+	case keymap.ActionPaste:
+		pa.pasteToFocused()
+	default:
+		pa.dispatchDir(a)
+	}
+}
+
+// dispatchDir routes focus and resize actions by direction.
+func (pa *paneArea) dispatchDir(a keymap.Action) {
+	switch a {
 	case keymap.ActionFocusLeft:
 		pa.focusDir(panetree.DirLeft)
 	case keymap.ActionFocusRight:
@@ -59,14 +67,21 @@ func (w *window) dispatch(a keymap.Action) {
 		pa.resizeFocused(panetree.DirUp)
 	case keymap.ActionResizeDown:
 		pa.resizeFocused(panetree.DirDown)
-	case keymap.ActionCopy:
-		if t := pa.focusedTerminal(); t != nil {
-			t.Copy()
-		}
-	case keymap.ActionPaste:
-		if t := pa.focusedTerminal(); t != nil {
-			t.Paste()
-		}
+	default:
+	}
+}
+
+// copyFromFocused copies the selection from the focused terminal.
+func (pa *paneArea) copyFromFocused() {
+	if t := pa.focusedTerminal(); t != nil {
+		t.Copy()
+	}
+}
+
+// pasteToFocused pastes clipboard contents into the focused terminal.
+func (pa *paneArea) pasteToFocused() {
+	if t := pa.focusedTerminal(); t != nil {
+		t.Paste()
 	}
 }
 

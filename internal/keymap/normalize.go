@@ -7,9 +7,13 @@ import (
 )
 
 // modifierOrder defines canonical modifier precedence (lower index = first).
+//
+//nolint:gochecknoglobals
 var modifierOrder = []string{"ctrl", "shift", "alt", "super"}
 
 // modifierSet is a fast lookup for known modifier names.
+//
+//nolint:gochecknoglobals
 var modifierSet = func() map[string]struct{} {
 	m := make(map[string]struct{}, len(modifierOrder))
 
@@ -30,8 +34,10 @@ func Normalize(binding string) (string, error) {
 
 	parts := strings.Split(strings.ToLower(binding), "+")
 
-	var mods []string
-	var key string
+	var (
+		mods []string
+		key  string
+	)
 
 	for _, p := range parts {
 		if _, isMod := modifierSet[p]; isMod {

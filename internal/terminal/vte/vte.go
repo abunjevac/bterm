@@ -48,11 +48,17 @@ func New() *Terminal {
 	ptr := (*C.VteTerminal)(unsafe.Pointer(raw))
 
 	obj := coreglib.Take(unsafe.Pointer(raw))
-	w := obj.WalkCast(func(o coreglib.Objector) bool {
+
+	result := obj.WalkCast(func(o coreglib.Objector) bool {
 		_, ok := o.(gtk.Widgetter)
 
 		return ok
-	}).(gtk.Widgetter)
+	})
+
+	w, ok := result.(gtk.Widgetter)
+	if !ok {
+		panic("vte: VTE widget does not implement gtk.Widgetter")
+	}
 
 	t := &Terminal{
 		ptr:    ptr,
@@ -122,9 +128,9 @@ func (t *Terminal) SetColors(p *theme.Palette) {
 	fg := C.CString(p.Foreground)
 	bg := C.CString(p.Background)
 	cur := C.CString(p.Cursor)
-	defer C.free(unsafe.Pointer(fg))
-	defer C.free(unsafe.Pointer(bg))
-	defer C.free(unsafe.Pointer(cur))
+	defer C.free(unsafe.Pointer(fg))  //nolint:nlreturn
+	defer C.free(unsafe.Pointer(bg))  //nolint:nlreturn
+	defer C.free(unsafe.Pointer(cur)) //nolint:nlreturn
 
 	cpal := make([]*C.char, len(p.Palette))
 	for i, c := range p.Palette {
@@ -143,7 +149,8 @@ func (t *Terminal) SetColors(p *theme.Palette) {
 // CurrentDir returns the shell's current working directory, decoded from the OSC 7 URI.
 // Returns "" when the terminal has not yet reported a directory.
 func (t *Terminal) CurrentDir() string {
-	uri := C.vteGetCurrentDirUri(t.ptr)
+	uri := C.vteGetCurrentDirUri(t.ptr) //nolint:nlreturn
+
 	if uri == nil {
 		return ""
 	}
@@ -215,7 +222,7 @@ func goVteTitleChanged(termID C.int) {
 		return
 	}
 
-	ctitle := C.vteGetWindowTitle(t.ptr)
+	ctitle := C.vteGetWindowTitle(t.ptr) //nolint:nlreturn
 
 	title := ""
 	if ctitle != nil {
