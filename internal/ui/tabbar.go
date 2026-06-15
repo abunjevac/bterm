@@ -18,6 +18,15 @@ func (w *window) buildTabBar() {
 	header := gtk.NewHeaderBar()
 
 	header.SetShowTitleButtons(true)
+
+	settingsBtn := gtk.NewButton()
+
+	settingsBtn.SetIconName("preferences-system-symbolic")
+	settingsBtn.SetTooltipText("Preferences")
+	settingsBtn.AddCSSClass("flat")
+	settingsBtn.ConnectClicked(func() { showConfigDialog(w.win, w) })
+
+	header.PackStart(settingsBtn)
 	header.PackStart(w.tabBox)
 
 	addBtn := gtk.NewButton()
@@ -186,6 +195,16 @@ func (w *window) buildMenuPopover() *gtk.Popover {
 	box.SetMarginEnd(4)
 
 	popover := gtk.NewPopover()
+
+	prefsBtn := menuItem("preferences-system-symbolic", "Preferences")
+
+	prefsBtn.ConnectClicked(func() {
+		popover.Popdown()
+
+		showConfigDialog(w.win, w)
+	})
+
+	box.Append(prefsBtn)
 
 	shortcutsBtn := menuItem("input-keyboard-symbolic", "Keyboard Shortcuts")
 

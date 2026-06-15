@@ -30,6 +30,8 @@ func (w *window) dispatchWindow(a keymap.Action) bool {
 		}
 	case keymap.ActionFontInc, keymap.ActionFontDec, keymap.ActionFontReset:
 		w.applyFontAction(a)
+	case keymap.ActionOpenConfig:
+		showConfigDialog(w.win, w)
 	default:
 		return w.dispatchTabSelect(a)
 	}

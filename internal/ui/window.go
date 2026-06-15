@@ -81,6 +81,34 @@ func (w *window) spawnTerm(t terminal.Terminal, workingDir string) {
 	t.Spawn(workingDir, shell, shellArgs(cfg), func(_ int, _ error) {})
 }
 
+// applyNewConfig applies live changes from a preferences save. Font and theme
+// are updated immediately; other settings take effect on next launch.
+func (w *window) applyNewConfig(old, next config.Config) {
+	fontChanged := next.Font != old.Font || next.FontSize != old.FontSize
+
+	if fontChanged {
+		w.fontFamily = next.Font
+		w.defaultFontSize = next.FontSize
+		w.fontSize = next.FontSize
+	}
+
+	if next.Theme != old.Theme {
+		w.palette = theme.Load(w.bundle.Dir, next.Theme)
+
+		applyStyle(w.palette)
+	}
+
+	for _, tab := range w.tabs {
+		for _, t := range tab.area.terms {
+			if fontChanged {
+				t.SetFont(w.fontFamily, w.fontSize)
+			}
+
+			t.SetColors(w.palette)
+		}
+	}
+}
+
 func shellArgs(cfg *config.Config) []string {
 	if len(cfg.ShellArgs) > 0 {
 		return cfg.ShellArgs
