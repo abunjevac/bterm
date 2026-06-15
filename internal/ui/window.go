@@ -23,6 +23,7 @@ type window struct {
 	active int
 	stack  *gtk.Stack
 	tabBox *gtk.Box
+	toast  *toaster
 
 	fontFamily      string
 	fontSize        float64
@@ -54,6 +55,11 @@ func newWindow(_ context.Context, app *gtk.Application, bundle *config.Bundle) *
 	applyStyle(w.palette)
 
 	w.buildTabBar()
+
+	w.toast = newToaster(w.stack)
+
+	w.win.SetChild(w.toast.overlay)
+
 	w.newTabEnd()
 	w.installKeys()
 

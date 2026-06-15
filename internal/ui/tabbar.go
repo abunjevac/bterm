@@ -40,8 +40,6 @@ func (w *window) buildTabBar() {
 	w.stack.SetVExpand(true)
 	w.stack.SetHExpand(true)
 	w.stack.SetTransitionType(gtk.StackTransitionTypeNone)
-
-	w.win.SetChild(w.stack)
 }
 
 // addTab creates a new tab with the given cwd, appends it to the tab list.

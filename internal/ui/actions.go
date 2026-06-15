@@ -41,8 +41,10 @@ func (w *window) dispatchPane(pa *paneArea, a keymap.Action) {
 		pa.closeFocused()
 	case keymap.ActionCopy:
 		pa.copyFromFocused()
+		w.toast.show("⧉ Copied")
 	case keymap.ActionPaste:
 		pa.pasteToFocused()
+		w.toast.show("⧉ Pasted")
 	default:
 		pa.dispatchDir(a)
 	}
