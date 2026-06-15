@@ -50,9 +50,9 @@ func Parse(data string) (*Config, error) {
 }
 
 func applyDefaults(cfg *Config) {
-	cfg.Font = cmp.Or(cfg.Font, "Monospace")
-	cfg.FontSize = cmp.Or(cfg.FontSize, 12.0)
-	cfg.Theme = cmp.Or(cfg.Theme, "dracula")
+	cfg.Font = cmp.Or(cfg.Font, "Google Sans Code")
+	cfg.FontSize = cmp.Or(cfg.FontSize, 16.0)
+	cfg.Theme = cmp.Or(cfg.Theme, "ayu")
 	cfg.Scrollback = cmp.Or(cfg.Scrollback, 5000)
 	cfg.WindowWidth = cmp.Or(cfg.WindowWidth, 1200)
 	cfg.WindowHeight = cmp.Or(cfg.WindowHeight, 800)
