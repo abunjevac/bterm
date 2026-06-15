@@ -1,0 +1,3 @@
+# two actions share ctrl+shift+c — conflict_keymap for TestConflicts
+copy  = "ctrl+shift+c"
+paste = "ctrl+shift+c"

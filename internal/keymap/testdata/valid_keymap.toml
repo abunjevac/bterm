@@ -1,0 +1,5 @@
+# minimal keymap fixture for tests
+copy        = ["ctrl+shift+c", "ctrl+insert"]
+paste       = "ctrl+shift+v"
+new_tab_end = "ctrl+shift+t"
+close_tab   = "ctrl+shift+q"
