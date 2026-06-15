@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Rounded dark background -->
+  <rect width="512" height="512" rx="88" fill="#1e1e2e"/>
+  <!-- Chevron &gt; -->
+  <polyline points="100,130 264,256 100,382"
+            stroke="#cdd6f4" stroke-width="52"
+            stroke-linecap="round" stroke-linejoin="round"
+            fill="none"/>
+  <!-- Cursor _ -->
+  <rect x="300" y="342" width="132" height="46" rx="10" fill="#89b4fa"/>
+</svg>

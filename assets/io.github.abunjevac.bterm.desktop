@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=bterm
+GenericName=Terminal Emulator
+Comment=An opinionated GTK4 terminal emulator
+Exec=bterm
+Icon=io.github.abunjevac.bterm
+Type=Application
+Terminal=false
+Categories=System;TerminalEmulator;
+Keywords=terminal;shell;command;console;
+StartupNotify=true
+StartupWMClass=bterm
