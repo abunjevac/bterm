@@ -25,12 +25,6 @@ type Config struct {
 	Title        string   `toml:"title"`
 }
 
-// Bundle is everything ui.Run needs: settings plus the config dir for theme/keymap loads.
-type Bundle struct {
-	Config *Config
-	Dir    string
-}
-
 // Parse decodes config.toml content, rejecting unknown keys, then applies defaults.
 func Parse(data string) (*Config, error) {
 	var cfg Config
@@ -81,6 +75,7 @@ func Save(path string, cfg *Config) error {
 	if err != nil {
 		return fmt.Errorf("create config: %w", err)
 	}
+
 	defer f.Close()
 
 	if err := toml.NewEncoder(f).Encode(cfg); err != nil {
