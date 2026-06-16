@@ -19,6 +19,8 @@ type window struct {
 	bundle *config.Bundle
 	keys   *keymap.Layout
 
+	workingDir string
+
 	tabs   []*tab
 	active int
 	stack  *gtk.Stack
@@ -32,13 +34,14 @@ type window struct {
 	newTerm         terminal.Factory
 }
 
-func newWindow(_ context.Context, app *gtk.Application, bundle *config.Bundle) *gtk.ApplicationWindow {
+func newWindow(_ context.Context, app *gtk.Application, bundle *config.Bundle, workingDir string) *gtk.ApplicationWindow {
 	cfg := bundle.Config
 
 	w := &window{
 		app:             app,
 		bundle:          bundle,
 		keys:            bundle.LoadKeymap(),
+		workingDir:      workingDir,
 		fontFamily:      cfg.Font,
 		fontSize:        cfg.FontSize,
 		defaultFontSize: cfg.FontSize,
@@ -111,6 +114,20 @@ func (w *window) applyNewConfig(old, next config.Config) {
 			t.SetColors(w.palette)
 		}
 	}
+}
+
+// activeCWD returns the working directory of the active tab's focused terminal,
+// or an empty string when unavailable (callers fall back to $HOME via spawnTerm).
+func (w *window) activeCWD() string {
+	if len(w.tabs) == 0 {
+		return w.workingDir
+	}
+
+	if ft := w.tabs[w.active].area.focusedTerminal(); ft != nil {
+		return ft.CurrentDir()
+	}
+
+	return w.workingDir
 }
 
 func shellArgs(cfg *config.Config) []string {

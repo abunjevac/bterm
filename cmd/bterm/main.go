@@ -23,6 +23,11 @@ func main() {
 				Aliases: []string{"c"},
 				Usage:   "path to config dir (default: ~/.config/bterm)",
 			},
+			&cli.StringFlag{
+				Name:    "working-directory",
+				Aliases: []string{"w"},
+				Usage:   "path to working dir (default: current dir)",
+			},
 		},
 		Action: run,
 	}
@@ -45,7 +50,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	ui.Run(ctx, bundle)
+	ui.Run(ctx, bundle, cmd.String("working-directory"))
 
 	return nil
 }

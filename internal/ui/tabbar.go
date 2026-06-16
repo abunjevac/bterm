@@ -269,17 +269,3 @@ func menuItem(iconName, label string) *gtk.Button {
 
 	return btn
 }
-
-// activeCWD returns the working directory of the active tab's focused terminal,
-// or an empty string when unavailable (callers fall back to $HOME via spawnTerm).
-func (w *window) activeCWD() string {
-	if len(w.tabs) == 0 {
-		return ""
-	}
-
-	if ft := w.tabs[w.active].area.focusedTerminal(); ft != nil {
-		return ft.CurrentDir()
-	}
-
-	return ""
-}

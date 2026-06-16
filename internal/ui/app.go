@@ -11,11 +11,11 @@ import (
 )
 
 // Run starts the GTK application and blocks until the window closes.
-func Run(ctx context.Context, bundle *config.Bundle) {
+func Run(ctx context.Context, bundle *config.Bundle, workingDir string) {
 	app := gtk.NewApplication("io.github.abunjevac.bterm", gio.ApplicationNonUnique)
 
 	app.ConnectActivate(func() {
-		w := newWindow(ctx, app, bundle)
+		w := newWindow(ctx, app, bundle, workingDir)
 
 		w.Present()
 	})
