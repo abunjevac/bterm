@@ -72,7 +72,7 @@ func (f *configForm) updateSpinners() {
 
 // buildConfigForm constructs the Preferences content and returns the scroll
 // container along with a form that holds references to each widget.
-func buildConfigForm(cfg config.Config) (*gtk.ScrolledWindow, configForm) {
+func buildConfigForm(cfg config.Config) (*gtk.ScrolledWindow, configForm) { //nolint:funlen
 	var f configForm
 
 	// Typography
@@ -228,7 +228,7 @@ func cfgThemeIndex(themes []string, name string) uint {
 	return 0
 }
 
-func showConfigDialog(parent *gtk.ApplicationWindow, w *window) {
+func showConfigDialog(parent *gtk.ApplicationWindow, w *window) { //nolint:funlen
 	cfg := *w.bundle.Config
 
 	scroll, form := buildConfigForm(cfg)
