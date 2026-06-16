@@ -18,6 +18,7 @@ font_inc         = "ctrl+kp_add"
 font_dec         = "ctrl+kp_subtract"
 font_reset       = "ctrl+kp_multiply"
 open_config      = "ctrl+comma"
+send_newline     = ["shift+return", "ctrl+return"]
 tab_1            = "alt+1"
 tab_2            = "alt+2"
 tab_3            = "alt+3"

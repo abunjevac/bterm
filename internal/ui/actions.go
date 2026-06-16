@@ -87,6 +87,8 @@ func (w *window) dispatchPane(pa *paneArea, a keymap.Action) {
 	case keymap.ActionPaste:
 		pa.pasteToFocused()
 		w.toast.show("⧉ Pasted")
+	case keymap.ActionSendNewline:
+		pa.sendNewlineToFocused()
 	default:
 		pa.dispatchDir(a)
 	}
@@ -126,6 +128,16 @@ func (pa *paneArea) copyFromFocused() {
 func (pa *paneArea) pasteToFocused() {
 	if t := pa.focusedTerminal(); t != nil {
 		t.Paste()
+	}
+}
+
+// sendNewlineToFocused feeds a literal newline (LF) to the focused terminal's
+// child. VTE's legacy key encoding collapses Shift+Enter and Ctrl+Enter to a
+// carriage return, so apps cannot tell them from plain Enter; sending LF gives
+// apps that treat LF as "insert newline" a distinct keystroke to bind.
+func (pa *paneArea) sendNewlineToFocused() {
+	if t := pa.focusedTerminal(); t != nil {
+		t.FeedChild([]byte{'\n'})
 	}
 }
 

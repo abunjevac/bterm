@@ -85,6 +85,12 @@ func TestDefaultLayout(t *testing.T) {
 	require.Equal(t, keymap.ActionTab9, layout.Lookup("alt+9"))
 	require.Equal(t, keymap.ActionFontInc, layout.Lookup("ctrl+kp_add"))
 	require.Equal(t, keymap.ActionFontDec, layout.Lookup("ctrl+kp_subtract"))
+	require.Equal(t, keymap.ActionSendNewline, layout.Lookup("shift+return"))
+	require.Equal(t, keymap.ActionSendNewline, layout.Lookup("ctrl+return"))
+}
+
+func TestSendNewlineActionName(t *testing.T) {
+	require.Equal(t, "send_newline", keymap.ActionSendNewline.String())
 }
 
 func TestDefaultLayoutNoConflicts(t *testing.T) {

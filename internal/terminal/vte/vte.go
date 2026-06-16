@@ -169,6 +169,19 @@ func (t *Terminal) CurrentDir() string {
 	return u.Path
 }
 
+// FeedChild writes data to the terminal's child process as if typed.
+// Used to inject bytes (e.g. a newline) that VTE's legacy key encoding
+// cannot represent, such as Shift+Enter.
+func (t *Terminal) FeedChild(data []byte) {
+	if len(data) == 0 {
+		return
+	}
+
+	// vte_terminal_feed_child copies the buffer synchronously, so passing a
+	// pointer into Go memory is safe — C does not retain it after the call.
+	C.vteFeedChild(t.ptr, (*C.char)(unsafe.Pointer(&data[0])), C.int(len(data)))
+}
+
 // Copy copies the selected text to the clipboard.
 func (t *Terminal) Copy() { C.vteCopyClipboard(t.ptr) }
 

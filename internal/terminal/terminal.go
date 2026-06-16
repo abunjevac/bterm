@@ -20,6 +20,7 @@ type Terminal interface {
 	CurrentDir() string
 	Copy()
 	Paste()
+	FeedChild(data []byte)
 	OnTitleChanged(fn func(title string))
 	OnChildExited(fn func(status int))
 }

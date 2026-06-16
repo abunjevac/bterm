@@ -36,6 +36,7 @@ const (
 	ActionTab7
 	ActionTab8
 	ActionTab9
+	ActionSendNewline
 )
 
 // actionNames maps each Action to its TOML key (snake_case).
@@ -71,6 +72,7 @@ var actionNames = map[Action]string{
 	ActionTab7:           "tab_7",
 	ActionTab8:           "tab_8",
 	ActionTab9:           "tab_9",
+	ActionSendNewline:    "send_newline",
 }
 
 // nameToAction is the reverse of actionNames, built once at init.
