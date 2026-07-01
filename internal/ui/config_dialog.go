@@ -16,15 +16,16 @@ import (
 
 // configForm holds all editable widgets in the Preferences dialog.
 type configForm struct {
-	fontBtn        *gtk.FontDialogButton
-	themeDD        *gtk.DropDown
-	themes         []string
-	shellEntry     *gtk.Entry
-	shellArgsEntry *gtk.Entry
-	scrollbackSpin *gtk.SpinButton
-	widthSpin      *gtk.SpinButton
-	heightSpin     *gtk.SpinButton
-	titleEntry     *gtk.Entry
+	fontBtn                 *gtk.FontDialogButton
+	themeDD                 *gtk.DropDown
+	themes                  []string
+	shellEntry              *gtk.Entry
+	shellArgsEntry          *gtk.Entry
+	scrollbackSpin          *gtk.SpinButton
+	widthSpin               *gtk.SpinButton
+	heightSpin              *gtk.SpinButton
+	titleEntry              *gtk.Entry
+	terminalNotificationsDD *gtk.DropDown
 }
 
 // collect reads the current widget values into a new Config, using base as the
@@ -58,6 +59,12 @@ func (f *configForm) collect(base config.Config) config.Config {
 	next.WindowColumns = int(f.widthSpin.Value())
 	next.WindowRows = int(f.heightSpin.Value())
 	next.Title = f.titleEntry.Text()
+
+	if f.terminalNotificationsDD.Selected() == 0 {
+		next.TerminalNotificationMethod = config.TerminalNotificationDBus
+	} else {
+		next.TerminalNotificationMethod = config.TerminalNotificationOff
+	}
 
 	return next
 }
@@ -115,10 +122,20 @@ func buildConfigForm(cfg config.Config) (*gtk.ScrolledWindow, configForm) { //no
 
 	// Terminal
 	f.scrollbackSpin = cfgSpin(100, 200000, 100, float64(cfg.Scrollback))
+	f.terminalNotificationsDD = gtk.NewDropDownFromStrings([]string{"D-Bus", "Off"})
+
+	if cfg.TerminalNotificationMethod == config.TerminalNotificationDBus {
+		f.terminalNotificationsDD.SetSelected(0)
+	} else {
+		f.terminalNotificationsDD.SetSelected(1)
+	}
+
+	f.terminalNotificationsDD.SetHExpand(true)
 
 	terminalGrid := cfgGrid()
 
 	cfgAttach(terminalGrid, 0, "Scrollback lines", f.scrollbackSpin)
+	cfgAttach(terminalGrid, 1, "Terminal notifications", f.terminalNotificationsDD)
 
 	// Window
 	f.widthSpin = cfgSpin(40, 500, 1, float64(cfg.WindowColumns))

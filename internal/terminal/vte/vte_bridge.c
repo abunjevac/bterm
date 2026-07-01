@@ -1,35 +1,124 @@
 #include "vte.h"
+#include <errno.h>
+#include <fcntl.h>
 #include <pango/pango.h>
+#include <pty.h>
+#include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
+#include <termios.h>
+#include <unistd.h>
 
-/* --- spawn --- */
+/* --- proxy spawn --- */
 
-static void vteSpawnBridge(VteTerminal *terminal, GPid pid, GError *error, gpointer user_data) {
-    int callbackID = (int)(intptr_t)user_data;
-    int ptyFd = -1;
-    char *errMsg = NULL;
-
-    if (error != NULL) {
-        errMsg = error->message;
-    } else {
-        VtePty *pty = vte_terminal_get_pty(terminal);
-        if (pty != NULL) {
-            ptyFd = vte_pty_get_fd(pty);
-        }
+static void close_if_valid(int fd) {
+    if (fd >= 0) {
+        close(fd);
     }
-
-    goVteSpawnDone(callbackID, (int)pid, ptyFd, errMsg);
 }
 
-void vteSpawnAsync(VteTerminal *terminal, const char *workingDir,
-                   char **argv, int callbackID) {
-    vte_terminal_spawn_async(
-        terminal, VTE_PTY_DEFAULT, workingDir, argv,
-        NULL, G_SPAWN_SEARCH_PATH,
-        NULL, NULL, NULL, -1, NULL,
-        vteSpawnBridge, (gpointer)(intptr_t)callbackID
-    );
+static char *dup_errno_message(const char *prefix) {
+    const char *msg = strerror(errno);
+    size_t len = strlen(prefix) + strlen(msg) + 3;
+    char *result = malloc(len);
+    if (result == NULL) { return NULL; }
+
+    snprintf(result, len, "%s: %s", prefix, msg);
+    return result;
+}
+
+static void set_raw(int fd) {
+    struct termios tio;
+    if (tcgetattr(fd, &tio) != 0) { return; }
+
+    cfmakeraw(&tio);
+    tcsetattr(fd, TCSANOW, &tio);
+}
+
+BtermProxySpawn vteSpawnProxy(VteTerminal *terminal, const char *workingDir,
+                              char **argv, int columns, int rows) {
+    BtermProxySpawn result = { .pid = -1, .frontend_slave_fd = -1, .backend_master_fd = -1, .err_msg = NULL };
+
+    int frontend_master = -1;
+    int frontend_slave = -1;
+
+    struct winsize ws = {0};
+    ws.ws_col = columns > 0 ? (unsigned short)columns : 80;
+    ws.ws_row = rows > 0 ? (unsigned short)rows : 24;
+
+    if (openpty(&frontend_master, &frontend_slave, NULL, NULL, &ws) != 0) {
+        result.err_msg = dup_errno_message("open frontend pty");
+        return result;
+    }
+
+    set_raw(frontend_slave);
+
+    GError *error = NULL;
+    VtePty *frontend_pty = vte_pty_new_foreign_sync(frontend_master, NULL, &error);
+    if (frontend_pty == NULL) {
+        result.err_msg = error != NULL ? strdup(error->message) : strdup("create VTE pty");
+        if (error != NULL) { g_error_free(error); }
+        close_if_valid(frontend_master);
+        close_if_valid(frontend_slave);
+        return result;
+    }
+
+    vte_terminal_set_pty(terminal, frontend_pty);
+    g_object_unref(frontend_pty);
+
+    int backend_master = -1;
+    pid_t pid = forkpty(&backend_master, NULL, NULL, &ws);
+    if (pid < 0) {
+        result.err_msg = dup_errno_message("fork pty");
+        close_if_valid(frontend_slave);
+        return result;
+    }
+
+    if (pid == 0) {
+        if (workingDir != NULL && workingDir[0] != '\0') {
+            if (chdir(workingDir) != 0) { _exit(127); }
+        }
+
+        execvp(argv[0], argv);
+        _exit(127);
+    }
+
+    vte_terminal_watch_child(terminal, (GPid)pid);
+
+    result.pid = (int)pid;
+    result.frontend_slave_fd = frontend_slave;
+    result.backend_master_fd = backend_master;
+
+    return result;
+}
+
+void vteFreeError(char *errMsg) {
+    free(errMsg);
+}
+
+int vteGetPtySize(int fd, int *columns, int *rows) {
+    if (fd < 0) { return 0; }
+
+    struct winsize ws = {0};
+    if (ioctl(fd, TIOCGWINSZ, &ws) != 0) { return 0; }
+
+    if (columns != NULL) { *columns = ws.ws_col; }
+    if (rows != NULL) { *rows = ws.ws_row; }
+
+    return 1;
+}
+
+void vteSetPtySize(int fd, int columns, int rows) {
+    if (fd < 0) { return; }
+
+    struct winsize ws = {0};
+    ws.ws_col = columns > 0 ? (unsigned short)columns : 80;
+    ws.ws_row = rows > 0 ? (unsigned short)rows : 24;
+
+    ioctl(fd, TIOCSWINSZ, &ws);
 }
 
 /* --- child-exited --- */

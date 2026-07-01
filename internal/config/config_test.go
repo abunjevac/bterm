@@ -23,6 +23,7 @@ func TestParseAppliesDefaults(t *testing.T) {
 	require.Equal(t, 5000, cfg.Scrollback)
 	require.Equal(t, 180, cfg.WindowColumns)
 	require.Equal(t, 40, cfg.WindowRows)
+	require.Equal(t, "dbus", cfg.TerminalNotificationMethod)
 }
 
 func TestParseOverrides(t *testing.T) {
@@ -33,11 +34,22 @@ func TestParseOverrides(t *testing.T) {
 	require.InEpsilon(t, 14.0, cfg.FontSize, 0.001)
 	require.Equal(t, "tokyo-night", cfg.Theme)
 	require.Equal(t, 10000, cfg.Scrollback)
+	require.Equal(t, "off", cfg.TerminalNotificationMethod)
 }
 
 func TestParseRejectsUnknownKeys(t *testing.T) {
 	_, err := config.Parse(`notakey = true`)
 	require.ErrorContains(t, err, "notakey")
+}
+
+func TestParseRejectsInvalidTerminalNotificationMethod(t *testing.T) {
+	_, err := config.Parse(`terminal_notification_method = "notify-send"`)
+	require.ErrorContains(t, err, "invalid terminal_notification_method")
+}
+
+func TestParseRejectsOldTerminalNotificationsKey(t *testing.T) {
+	_, err := config.Parse(`terminal_notifications = false`)
+	require.ErrorContains(t, err, "terminal_notifications")
 }
 
 func TestSaveRoundTrip(t *testing.T) {

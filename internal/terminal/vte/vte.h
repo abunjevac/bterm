@@ -1,11 +1,21 @@
 #pragma once
 #include <vte/vte.h>
 
-extern void goVteSpawnDone(int callbackID, int pid, int ptyFd, char *errMsg);
+typedef struct {
+    int pid;
+    int frontend_slave_fd;
+    int backend_master_fd;
+    char *err_msg;
+} BtermProxySpawn;
+
 extern void goVteChildExited(int termID, int status);
 extern void goVteTitleChanged(int termID);
 
-void vteSpawnAsync(VteTerminal *terminal, const char *workingDir, char **argv, int callbackID);
+BtermProxySpawn vteSpawnProxy(VteTerminal *terminal, const char *workingDir,
+                              char **argv, int columns, int rows);
+void vteFreeError(char *errMsg);
+int vteGetPtySize(int fd, int *columns, int *rows);
+void vteSetPtySize(int fd, int columns, int rows);
 void vteConnectChildExited(VteTerminal *terminal, int termID);
 void vteConnectTitleChanged(VteTerminal *terminal, int termID);
 void vteFeedChild(VteTerminal *terminal, const char *data, int len);

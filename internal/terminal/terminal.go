@@ -22,6 +22,7 @@ type Terminal interface {
 	Paste()
 	FeedChild(data []byte)
 	OnTitleChanged(fn func(title string))
+	OnNotification(fn func(title, message string))
 	OnChildExited(fn func(status int))
 }
 

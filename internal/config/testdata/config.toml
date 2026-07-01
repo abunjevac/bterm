@@ -2,3 +2,4 @@ font = "JetBrains Mono"
 font_size = 14
 theme = "tokyo-night"
 scrollback = 10000
+terminal_notification_method = "off"

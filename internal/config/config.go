@@ -12,17 +12,23 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+const (
+	TerminalNotificationDBus = "dbus"
+	TerminalNotificationOff  = "off"
+)
+
 // Config holds top-level bterm settings (config.toml).
 type Config struct {
-	Font          string   `toml:"font"`
-	FontSize      float64  `toml:"font_size"`
-	Theme         string   `toml:"theme"`
-	Shell         string   `toml:"shell"`
-	ShellArgs     []string `toml:"shell_args"`
-	Scrollback    int      `toml:"scrollback"`
-	WindowColumns int      `toml:"window_columns"`
-	WindowRows    int      `toml:"window_rows"`
-	Title         string   `toml:"title"`
+	Font                       string   `toml:"font"`
+	FontSize                   float64  `toml:"font_size"`
+	Theme                      string   `toml:"theme"`
+	Shell                      string   `toml:"shell"`
+	ShellArgs                  []string `toml:"shell_args"`
+	Scrollback                 int      `toml:"scrollback"`
+	WindowColumns              int      `toml:"window_columns"`
+	WindowRows                 int      `toml:"window_rows"`
+	Title                      string   `toml:"title"`
+	TerminalNotificationMethod string   `toml:"terminal_notification_method"`
 }
 
 // Parse decodes config.toml content, rejecting unknown keys, then applies defaults.
@@ -46,6 +52,10 @@ func Parse(data string) (*Config, error) {
 
 	applyDefaults(&cfg)
 
+	if err := validateTerminalNotificationMethod(cfg.TerminalNotificationMethod); err != nil {
+		return nil, err
+	}
+
 	return &cfg, nil
 }
 
@@ -57,6 +67,22 @@ func applyDefaults(cfg *Config) {
 	cfg.WindowColumns = cmp.Or(cfg.WindowColumns, 180)
 	cfg.WindowRows = cmp.Or(cfg.WindowRows, 40)
 	cfg.Title = cmp.Or(cfg.Title, "bterm")
+
+	cfg.TerminalNotificationMethod = cmp.Or(cfg.TerminalNotificationMethod, TerminalNotificationDBus)
+}
+
+func validateTerminalNotificationMethod(method string) error {
+	switch method {
+	case TerminalNotificationDBus, TerminalNotificationOff:
+		return nil
+	default:
+		return fmt.Errorf(
+			"invalid terminal_notification_method %q (expected %q or %q)",
+			method,
+			TerminalNotificationDBus,
+			TerminalNotificationOff,
+		)
+	}
 }
 
 // LoadFile reads and parses a config.toml at path.

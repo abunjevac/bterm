@@ -80,6 +80,7 @@ func (w *window) spawnTerm(t terminal.Terminal, workingDir string) {
 	t.SetFont(w.fontFamily, w.fontSize)
 	t.SetColors(w.palette)
 	t.SetScrollback(cfg.Scrollback)
+	w.installTerminalNotifications(t)
 
 	if len(w.tabs) == 0 {
 		t.SetSize(cfg.WindowColumns, cfg.WindowRows)

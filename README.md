@@ -114,7 +114,10 @@ scrollback     = 10000
 window_columns = 180
 window_rows    = 40
 title          = "bterm"
+terminal_notification_method = "dbus"  # "dbus" or "off"
 ```
+
+Terminal notifications are enabled by default. bterm listens for sequences such as `OSC 777;notify;Title;Message ST` and `OSC 9;Message ST`, then sends them directly to `org.freedesktop.Notifications` over D-Bus.
 
 ---
 
