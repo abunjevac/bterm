@@ -211,6 +211,18 @@ void vtePasteClipboard(VteTerminal *terminal) {
     vte_terminal_paste_clipboard(terminal);
 }
 
+int vteHasSelection(VteTerminal *terminal) {
+    return vte_terminal_get_has_selection(terminal) ? 1 : 0;
+}
+
+void vteClear(VteTerminal *terminal) {
+    vte_terminal_reset(terminal, FALSE, TRUE);
+}
+
+void vteReset(VteTerminal *terminal) {
+    vte_terminal_reset(terminal, TRUE, TRUE);
+}
+
 /* --- size --- */
 
 void vteSetSize(VteTerminal *terminal, int columns, int rows) {

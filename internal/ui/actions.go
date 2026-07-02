@@ -5,6 +5,14 @@ import (
 	"github.com/abunjevac/bterm/internal/ui/panetree"
 )
 
+type clearTerminal interface {
+	Clear()
+}
+
+type resetTerminal interface {
+	Reset()
+}
+
 // dispatch routes the action: window-level first, then active pane area.
 func (w *window) dispatch(a keymap.Action) {
 	if w.dispatchWindow(a) {
@@ -32,11 +40,22 @@ func (w *window) dispatchWindow(a keymap.Action) bool {
 		w.applyFontAction(a)
 	case keymap.ActionOpenConfig:
 		showConfigDialog(w.win, w)
+	case keymap.ActionNewWindow:
+		w.openNewWindow()
+	case keymap.ActionCloseWindow:
+		w.win.Close()
 	default:
 		return w.dispatchTabSelect(a)
 	}
 
 	return true
+}
+
+// openNewWindow opens another application window using the active terminal directory.
+func (w *window) openNewWindow() {
+	win := newWindow(w.app, w.bundle, w.activeCWD())
+
+	win.Present()
 }
 
 // dispatchTabSelect activates a numbered tab (Tab1–Tab9). Returns true when consumed.
@@ -87,6 +106,10 @@ func (w *window) dispatchPane(pa *paneArea, a keymap.Action) {
 	case keymap.ActionPaste:
 		pa.pasteToFocused()
 		w.toast.show("⧉ Pasted")
+	case keymap.ActionClear:
+		pa.clearFocused()
+	case keymap.ActionReset:
+		pa.resetFocused()
 	case keymap.ActionSendNewline:
 		pa.sendNewlineToFocused()
 	default:
@@ -128,6 +151,20 @@ func (pa *paneArea) copyFromFocused() {
 func (pa *paneArea) pasteToFocused() {
 	if t := pa.focusedTerminal(); t != nil {
 		t.Paste()
+	}
+}
+
+// clearFocused clears the focused terminal's screen and scrollback.
+func (pa *paneArea) clearFocused() {
+	if t, ok := pa.focusedTerminal().(clearTerminal); ok {
+		t.Clear()
+	}
+}
+
+// resetFocused resets the focused terminal and clears scrollback.
+func (pa *paneArea) resetFocused() {
+	if t, ok := pa.focusedTerminal().(resetTerminal); ok {
+		t.Reset()
 	}
 }
 

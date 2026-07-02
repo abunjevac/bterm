@@ -23,10 +23,14 @@ const (
 	ActionCloseTab
 	ActionCopy
 	ActionPaste
+	ActionClear
+	ActionReset
 	ActionFontInc
 	ActionFontDec
 	ActionFontReset
 	ActionOpenConfig
+	ActionNewWindow
+	ActionCloseWindow
 	ActionTab1
 	ActionTab2
 	ActionTab3
@@ -59,10 +63,14 @@ var actionNames = map[Action]string{
 	ActionCloseTab:       "close_tab",
 	ActionCopy:           "copy",
 	ActionPaste:          "paste",
+	ActionClear:          "clear",
+	ActionReset:          "reset",
 	ActionFontInc:        "font_inc",
 	ActionFontDec:        "font_dec",
 	ActionFontReset:      "font_reset",
 	ActionOpenConfig:     "open_config",
+	ActionNewWindow:      "new_window",
+	ActionCloseWindow:    "close_window",
 	ActionTab1:           "tab_1",
 	ActionTab2:           "tab_2",
 	ActionTab3:           "tab_3",

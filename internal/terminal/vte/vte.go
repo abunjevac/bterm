@@ -221,6 +221,21 @@ func (t *Terminal) Copy() { C.vteCopyClipboard(t.ptr) }
 // Paste pastes clipboard contents into the terminal.
 func (t *Terminal) Paste() { C.vtePasteClipboard(t.ptr) }
 
+// HasSelection reports whether the terminal currently owns a text selection.
+//
+//nolint:nlreturn // short cgo wrapper mirrors adjacent terminal methods.
+func (t *Terminal) HasSelection() bool {
+	selected := C.vteHasSelection(t.ptr) != 0
+
+	return selected
+}
+
+// Clear clears the visible terminal and scrollback without resetting terminal modes.
+func (t *Terminal) Clear() { C.vteClear(t.ptr) }
+
+// Reset resets terminal modes and clears scrollback.
+func (t *Terminal) Reset() { C.vteReset(t.ptr) }
+
 // OnTitleChanged sets the callback invoked when the terminal title changes.
 func (t *Terminal) OnTitleChanged(f func(string)) { t.onTitle = f }
 

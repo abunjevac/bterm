@@ -73,6 +73,8 @@ func (pa *paneArea) registerTerm(id int, t terminal.Terminal) {
 
 	pa.widgets[id] = w
 
+	pa.installTerminalContextMenu(id, w)
+
 	t.OnChildExited(func(_ int) {
 		pa.closeID(id)
 	})

@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"context"
 	"os"
 
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
@@ -34,7 +33,7 @@ type window struct {
 	newTerm         terminal.Factory
 }
 
-func newWindow(_ context.Context, app *gtk.Application, bundle *config.Bundle, workingDir string) *gtk.ApplicationWindow {
+func newWindow(app *gtk.Application, bundle *config.Bundle, workingDir string) *gtk.ApplicationWindow {
 	cfg := bundle.Config
 
 	w := &window{
