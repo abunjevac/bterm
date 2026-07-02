@@ -32,7 +32,9 @@ func (pa *paneArea) installTerminalContextMenu(id int, widget gtk.Widgetter) {
 
 func (pa *paneArea) showContextMenu(id int, widget gtk.Widgetter, x, y float64) {
 	var openSubmenu *gtk.Popover
+
 	t := pa.terms[id]
+
 	if t == nil {
 		return
 	}

@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -22,7 +23,7 @@ type terminalNotification struct {
 
 func (w *window) installTerminalNotifications(t terminal.Terminal) {
 	cfg := w.bundle.Config
-	
+
 	if cfg == nil || cfg.TerminalNotificationMethod != config.TerminalNotificationDBus {
 		return
 	}
@@ -34,7 +35,7 @@ func (w *window) installTerminalNotifications(t terminal.Terminal) {
 
 func (w *window) handleTerminalNotification(n terminalNotification) {
 	cfg := w.bundle.Config
-	
+
 	if cfg == nil || cfg.TerminalNotificationMethod != config.TerminalNotificationDBus {
 		return
 	}
@@ -54,7 +55,7 @@ func (w *window) handleTerminalNotification(n terminalNotification) {
 	argv := notificationDBusArgs(title, message)
 
 	go func() {
-		output, err := exec.Command("gdbus", argv...).CombinedOutput()
+		output, err := exec.CommandContext(context.Background(), "gdbus", argv...).CombinedOutput()
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "bterm: terminal notification: %v: %s\n", err, strings.TrimSpace(string(output)))
 		}

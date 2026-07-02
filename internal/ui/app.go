@@ -16,7 +16,7 @@ func Run(ctx context.Context, bundle *config.Bundle, workingDir string) {
 
 	app := gtk.NewApplication("io.github.abunjevac.bterm", gio.ApplicationNonUnique)
 
-	app.ConnectActivate(func() {
+	app.ConnectActivate(func() { //nolint:contextcheck // GTK activation callback has no context parameter; downstream notification subprocess uses background context.
 		w := newWindow(app, bundle, workingDir)
 
 		w.Present()

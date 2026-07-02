@@ -101,7 +101,8 @@ func (t *Terminal) Spawn(workingDir, shell string, args []string, cb terminal.Sp
 		defer C.free(unsafe.Pointer(cwd)) //nolint:nlreturn // cgo deferred free, not a return
 	}
 
-	spawn := C.vteSpawnProxy(t.ptr, cwd, &argv[0], C.int(t.columns), C.int(t.rows))
+	spawn := C.vteSpawnProxy(t.ptr, cwd, &argv[0], C.int(t.columns), C.int(t.rows)) //nolint:nlreturn
+
 	if spawn.err_msg != nil {
 		err := errors.New(C.GoString(spawn.err_msg))
 		C.vteFreeError(spawn.err_msg)
@@ -322,7 +323,7 @@ func (t *Terminal) writeBackend(data []byte) error {
 	for len(data) > 0 {
 		n, err := t.backend.Write(data)
 		if err != nil {
-			return err
+			return fmt.Errorf("write backend: %w", err)
 		}
 
 		data = data[n:]
