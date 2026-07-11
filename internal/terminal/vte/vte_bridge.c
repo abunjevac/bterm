@@ -69,6 +69,11 @@ BtermProxySpawn vteSpawnProxy(VteTerminal *terminal, const char *workingDir,
     vte_terminal_set_pty(terminal, frontend_pty);
     g_object_unref(frontend_pty);
 
+    /* Formatted before fork: snprintf is not async-signal-safe. */
+    char vte_version[16];
+    snprintf(vte_version, sizeof(vte_version), "%u",
+             vte_get_minor_version() * 100 + vte_get_micro_version());
+
     int backend_master = -1;
     pid_t pid = forkpty(&backend_master, NULL, NULL, &ws);
     if (pid < 0) {
@@ -78,6 +83,14 @@ BtermProxySpawn vteSpawnProxy(VteTerminal *terminal, const char *workingDir,
     }
 
     if (pid == 0) {
+        /* Mirror vte_pty_child_setup: the shell runs inside a VTE widget, so
+         * announce VTE's identity/capabilities regardless of inherited env.
+         * Scripts like /etc/profile.d/vte.sh need TERM and VTE_VERSION to
+         * enable OSC 7 directory tracking. */
+        setenv("TERM", "xterm-256color", 1);
+        setenv("COLORTERM", "truecolor", 1);
+        setenv("VTE_VERSION", vte_version, 1);
+
         if (workingDir != NULL && workingDir[0] != '\0') {
             if (chdir(workingDir) != 0) { _exit(127); }
         }
