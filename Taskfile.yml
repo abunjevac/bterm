@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 tasks:
   build:
@@ -8,6 +8,11 @@ tasks:
         sh: git describe --tags --abbrev=0 2>/dev/null || echo "dev"
     cmds:
       - go build -ldflags "-X github.com/abunjevac/bterm/internal/version.Version={{.VERSION}}" -o bterm ./cmd/bterm
+
+  pack:
+    desc: Package bterm binary with upx
+    cmds:
+      - upx -6 -q bterm
 
   run:
     desc: Build and run bterm
