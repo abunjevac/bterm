@@ -15,10 +15,14 @@ import (
 var cssTmpl string
 
 // applyStyle installs a CSS provider deriving chrome colors from the theme accent.
-// For the system-default theme it installs nothing (keeps host GTK theme).
+// The system-default theme keeps host GTK colors while still enabling app CSS classes.
 func applyStyle(p *theme.Palette) {
 	if p == nil || p.UseSystemDefault {
-		return
+		p = &theme.Palette{
+			Foreground: "@theme_fg_color",
+			Background: "@theme_bg_color",
+			Accent:     "@theme_selected_bg_color",
+		}
 	}
 
 	t := template.Must(template.New("css").Parse(cssTmpl))

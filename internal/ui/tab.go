@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 
+	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"github.com/diamondburned/gotk4/pkg/pango"
 )
@@ -48,6 +49,7 @@ func (t *tab) buildLabel(w *window, idx int) {
 
 	selectBtn.SetChild(innerBox)
 	selectBtn.AddCSSClass("flat")
+	selectBtn.SetCursorFromName("grab")
 	selectBtn.ConnectClicked(func() {
 		if i := w.tabIndex(t); i >= 0 {
 			w.selectTab(i)
@@ -82,8 +84,19 @@ func installTabDetachDrag(selectBtn *gtk.Button, w *window, t *tab) {
 	drag.SetPropagationPhase(gtk.PhaseCapture)
 	drag.ConnectDragBegin(func(_, _ float64) {
 		drag.SetState(gtk.EventSequenceClaimed)
+		setDragSurfaceCursor(selectBtn, "move")
+		selectBtn.AddCSSClass("bterm-tab-dragging")
+		t.label.AddCSSClass("bterm-tab-dragging")
+	})
+	drag.ConnectDragUpdate(func(_, _ float64) {
+		setDragSurfaceCursor(selectBtn, "move")
 	})
 	drag.ConnectDragEnd(func(_, offsetY float64) {
+		setDragSurfaceCursor(selectBtn, "")
+		selectBtn.SetCursorFromName("grab")
+		selectBtn.RemoveCSSClass("bterm-tab-dragging")
+		t.label.RemoveCSSClass("bterm-tab-dragging")
+
 		if offsetY > -tabDetachDragThreshold && offsetY < tabDetachDragThreshold {
 			return
 		}
@@ -91,4 +104,26 @@ func installTabDetachDrag(selectBtn *gtk.Button, w *window, t *tab) {
 		w.detachTab(t)
 	})
 	selectBtn.AddController(drag)
+}
+
+func setDragSurfaceCursor(widget gtk.Widgetter, name string) {
+	native := gtk.BaseWidget(widget).Native()
+
+	if native == nil {
+		return
+	}
+
+	surface := native.Surface()
+
+	if surface == nil {
+		return
+	}
+
+	var cursor *gdk.Cursor
+
+	if name != "" {
+		cursor = gdk.NewCursorFromName(name, nil)
+	}
+
+	gdk.BaseSurface(surface).SetCursor(cursor)
 }
