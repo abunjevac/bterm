@@ -66,23 +66,63 @@ func (w *window) addTab(cwd string) {
 
 	t.area = newPaneArea(w, term)
 
+	w.attachTab(t)
+}
+
+func (w *window) attachTab(t *tab) {
+	w.bindTab(t)
+
+	w.stack.AddChild(t.area.root)
+	w.tabBox.Append(t.label)
+
+	w.tabs = append(w.tabs, t)
+}
+
+func (w *window) bindTab(t *tab) {
+	t.area.win = w
 	t.area.onEmpty = func() { w.closeTab(t) }
 
 	t.buildLabel(w, len(w.tabs)+1)
 
 	t.area.onTitleChanged = func(title string) {
 		t.title = title
-		t.titleLabel.SetText(title)
+
+		if t.titleLabel != nil {
+			t.titleLabel.SetText(title)
+		}
 
 		if len(w.tabs) > 0 && w.tabs[w.active] == t {
 			w.win.SetTitle(title)
 		}
 	}
+}
 
-	w.stack.AddChild(t.area.root)
-	w.tabBox.Append(t.label)
+func (w *window) detachTab(t *tab) {
+	idx := w.tabIndex(t)
+	if idx < 0 || len(w.tabs) < 2 {
+		return
+	}
 
-	w.tabs = append(w.tabs, t)
+	w.stack.Remove(t.area.root)
+	w.tabBox.Remove(t.label)
+
+	w.tabs = slices.Delete(w.tabs, idx, idx+1)
+
+	if w.active > idx {
+		w.active--
+	} else if w.active >= len(w.tabs) {
+		w.active = len(w.tabs) - 1
+	}
+
+	w.renumber()
+	w.selectTab(w.active)
+
+	newWin := newEmptyWindow(w.app, w.bundle, w.workingDir)
+
+	newWin.attachTab(t)
+	newWin.renumber()
+	newWin.selectTab(0)
+	newWin.win.Present()
 }
 
 // newTabEnd opens a new tab at the end of the tab list and selects it.

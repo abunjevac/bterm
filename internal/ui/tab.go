@@ -7,6 +7,8 @@ import (
 	"github.com/diamondburned/gotk4/pkg/pango"
 )
 
+const tabDetachDragThreshold = 72
+
 // tab represents one terminal tab: a pane layout, its current title, and the
 // header-bar label widget.
 type tab struct {
@@ -25,7 +27,13 @@ func (t *tab) buildLabel(w *window, idx int) {
 
 	t.numLabel.AddCSSClass("bterm-tab-num")
 
-	t.titleLabel = gtk.NewLabel("Terminal")
+	title := t.title
+
+	if title == "" {
+		title = "Terminal"
+	}
+
+	t.titleLabel = gtk.NewLabel(title)
 
 	t.titleLabel.SetEllipsize(pango.EllipsizeEnd)
 	t.titleLabel.SetMaxWidthChars(20)
@@ -46,6 +54,8 @@ func (t *tab) buildLabel(w *window, idx int) {
 		}
 	})
 
+	installTabDetachDrag(selectBtn, w, t)
+
 	// closeBtn is a sibling of selectBtn, not nested inside it.
 	closeBtn := gtk.NewButton()
 
@@ -62,4 +72,23 @@ func (t *tab) buildLabel(w *window, idx int) {
 	t.label.SetMarginBottom(2)
 	t.label.Append(selectBtn)
 	t.label.Append(closeBtn)
+}
+
+func installTabDetachDrag(selectBtn *gtk.Button, w *window, t *tab) {
+	drag := gtk.NewGestureDrag()
+
+	drag.SetButton(1)
+	drag.SetExclusive(true)
+	drag.SetPropagationPhase(gtk.PhaseCapture)
+	drag.ConnectDragBegin(func(_, _ float64) {
+		drag.SetState(gtk.EventSequenceClaimed)
+	})
+	drag.ConnectDragEnd(func(_, offsetY float64) {
+		if offsetY > -tabDetachDragThreshold && offsetY < tabDetachDragThreshold {
+			return
+		}
+
+		w.detachTab(t)
+	})
+	selectBtn.AddController(drag)
 }

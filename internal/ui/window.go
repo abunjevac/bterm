@@ -34,6 +34,14 @@ type window struct {
 }
 
 func newWindow(app *gtk.Application, bundle *config.Bundle, workingDir string) *gtk.ApplicationWindow {
+	w := newEmptyWindow(app, bundle, workingDir)
+
+	w.newTabEnd()
+
+	return w.win
+}
+
+func newEmptyWindow(app *gtk.Application, bundle *config.Bundle, workingDir string) *window {
 	cfg := bundle.Config
 
 	w := &window{
@@ -61,10 +69,9 @@ func newWindow(app *gtk.Application, bundle *config.Bundle, workingDir string) *
 
 	w.win.SetChild(w.toast.overlay)
 
-	w.newTabEnd()
 	w.installKeys()
 
-	return w.win
+	return w
 }
 
 // spawnTerm configures and spawns a shell in t. An empty workingDir defaults to $HOME.
