@@ -6,6 +6,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestExpandCWDArgs(t *testing.T) {
+	require.Equal(t, []string{"--folder=/tmp/project", "/tmp/project"}, expandCWDArgs([]string{"--folder={cwd}", "{cwd}"}, "/tmp/project"))
+}
+
 func TestNotificationDBusArgsSetsBtermIdentity(t *testing.T) {
 	args := notificationDBusArgs("Title", "Message")
 

@@ -87,6 +87,8 @@ func TestDefaultLayout(t *testing.T) {
 	require.Equal(t, keymap.ActionFontDec, layout.Lookup("ctrl+kp_subtract"))
 	require.Equal(t, keymap.ActionSendNewline, layout.Lookup("shift+return"))
 	require.Equal(t, keymap.ActionSendNewline, layout.Lookup("ctrl+return"))
+	require.Equal(t, keymap.ActionOpenEditor, layout.Lookup("ctrl+shift+i"))
+	require.Equal(t, keymap.ActionOpenFileBrowser, layout.Lookup("ctrl+shift+f"))
 }
 
 func TestSendNewlineActionName(t *testing.T) {

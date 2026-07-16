@@ -19,6 +19,7 @@ An opinionated GTK4 terminal emulator with tabs and pane splitting. Built with G
 - **CWD inheritance** — new tabs and splits open in the working directory of the active pane
 - **Clipboard toasts** — brief overlay confirms copy and paste actions
 - **Theme system** — TOML palette files; ships with a Dracula-compatible default
+- **Configurable applications** — open the focused terminal directory in an editor or file browser
 - **Configurable keybindings** — remap any action in `~/.config/bterm/keymap.toml`
 
 ---
@@ -115,7 +116,13 @@ window_columns = 180
 window_rows    = 40
 title          = "bterm"
 terminal_notification_method = "dbus"  # "dbus" or "off"
+editor          = "zed"
+editor_args     = ["{cwd}"]
+file_browser    = "dolphin"
+file_browser_args = ["{cwd}"]
 ```
+
+`{cwd}` is replaced with the focused terminal's current directory. Configure the executable and arguments in Preferences; the terminal popup menu also provides **Open > Editor** and **Open > File Browser**.
 
 Terminal notifications are enabled by default. bterm listens for sequences such as `OSC 777;notify;Title;Message ST` and `OSC 9;Message ST`, then sends them directly to `org.freedesktop.Notifications` over D-Bus.
 
@@ -165,6 +172,8 @@ All bindings are configurable in `~/.config/bterm/keymap.toml`. The current set 
 | Shortcut | Action      |
 |----------|-------------|
 | `Ctrl+,` | Open Config |
+| `Ctrl+Shift+I` | Open editor in current directory |
+| `Ctrl+Shift+F` | Open file browser in current directory |
 
 ---
 

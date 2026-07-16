@@ -24,6 +24,10 @@ func TestParseAppliesDefaults(t *testing.T) {
 	require.Equal(t, 180, cfg.WindowColumns)
 	require.Equal(t, 40, cfg.WindowRows)
 	require.Equal(t, "dbus", cfg.TerminalNotificationMethod)
+	require.Equal(t, "zed", cfg.Editor)
+	require.Equal(t, []string{"{cwd}"}, cfg.EditorArgs)
+	require.Equal(t, "dolphin", cfg.FileBrowser)
+	require.Equal(t, []string{"{cwd}"}, cfg.FileBrowserArgs)
 }
 
 func TestParseOverrides(t *testing.T) {

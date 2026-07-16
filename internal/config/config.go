@@ -29,6 +29,10 @@ type Config struct {
 	WindowRows                 int      `toml:"window_rows"`
 	Title                      string   `toml:"title"`
 	TerminalNotificationMethod string   `toml:"terminal_notification_method"`
+	Editor                     string   `toml:"editor"`
+	EditorArgs                 []string `toml:"editor_args"`
+	FileBrowser                string   `toml:"file_browser"`
+	FileBrowserArgs            []string `toml:"file_browser_args"`
 }
 
 // Parse decodes config.toml content, rejecting unknown keys, then applies defaults.
@@ -67,6 +71,17 @@ func applyDefaults(cfg *Config) {
 	cfg.WindowColumns = cmp.Or(cfg.WindowColumns, 180)
 	cfg.WindowRows = cmp.Or(cfg.WindowRows, 40)
 	cfg.Title = cmp.Or(cfg.Title, "bterm")
+	cfg.Editor = cmp.Or(cfg.Editor, "zed")
+
+	if cfg.EditorArgs == nil {
+		cfg.EditorArgs = []string{"{cwd}"}
+	}
+
+	cfg.FileBrowser = cmp.Or(cfg.FileBrowser, "dolphin")
+
+	if cfg.FileBrowserArgs == nil {
+		cfg.FileBrowserArgs = []string{"{cwd}"}
+	}
 
 	cfg.TerminalNotificationMethod = cmp.Or(cfg.TerminalNotificationMethod, TerminalNotificationDBus)
 }

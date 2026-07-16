@@ -52,6 +52,11 @@ func (pa *paneArea) showContextMenu(id int, widget gtk.Widgetter, x, y float64) 
 	box.Append(contextAction(pa.win, popover, "Clear", keymap.ActionClear, true))
 	box.Append(contextAction(pa.win, popover, "Reset", keymap.ActionReset, true))
 	box.Append(gtk.NewSeparator(gtk.OrientationHorizontal))
+	box.Append(contextSubmenu(pa.win, popover, &openSubmenu, "Open", []contextMenuEntry{
+		{label: "Editor", action: keymap.ActionOpenEditor, sensitive: true},
+		{label: "File Browser", action: keymap.ActionOpenFileBrowser, sensitive: true},
+	}))
+	box.Append(gtk.NewSeparator(gtk.OrientationHorizontal))
 	box.Append(contextSubmenu(pa.win, popover, &openSubmenu, "Split", []contextMenuEntry{
 		{label: "Split Right", action: keymap.ActionSplitLeftRight, sensitive: true},
 		{label: "Split Down", action: keymap.ActionSplitTopBottom, sensitive: true},

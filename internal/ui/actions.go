@@ -1,6 +1,12 @@
 package ui
 
 import (
+	"context"
+	"fmt"
+	"os"
+	"os/exec"
+	"strings"
+
 	"github.com/abunjevac/bterm/internal/keymap"
 	"github.com/abunjevac/bterm/internal/ui/panetree"
 )
@@ -28,10 +34,8 @@ func (w *window) dispatch(a keymap.Action) {
 // was consumed so dispatch does not fall through to pane handling.
 func (w *window) dispatchWindow(a keymap.Action) bool {
 	switch a {
-	case keymap.ActionNewTabEnd:
-		w.newTabEnd()
-	case keymap.ActionNewTabAfter:
-		w.newTabAfter()
+	case keymap.ActionNewTabEnd, keymap.ActionNewTabAfter:
+		w.newTab(a)
 	case keymap.ActionCloseTab:
 		if len(w.tabs) > 0 {
 			w.closeTab(w.tabs[w.active])
@@ -44,11 +48,70 @@ func (w *window) dispatchWindow(a keymap.Action) bool {
 		w.openNewWindow()
 	case keymap.ActionCloseWindow:
 		w.win.Close()
+	case keymap.ActionOpenEditor, keymap.ActionOpenFileBrowser:
+		w.openConfiguredApplication(a)
 	default:
 		return w.dispatchTabSelect(a)
 	}
 
 	return true
+}
+
+func (w *window) newTab(action keymap.Action) {
+	if action == keymap.ActionNewTabEnd {
+		w.newTabEnd()
+
+		return
+	}
+
+	w.newTabAfter()
+}
+
+func (w *window) openConfiguredApplication(action keymap.Action) {
+	if action == keymap.ActionOpenEditor {
+		w.openApplication("Opening editor...", w.bundle.Config.Editor, w.bundle.Config.EditorArgs)
+
+		return
+	}
+
+	w.openApplication("Opening file browser...", w.bundle.Config.FileBrowser, w.bundle.Config.FileBrowserArgs)
+}
+
+// openApplication starts a configured application with the active terminal directory.
+func (w *window) openApplication(message, command string, args []string) {
+	command = strings.TrimSpace(command)
+	if command == "" {
+		w.toast.show("Application command is not configured")
+
+		return
+	}
+
+	cwd := w.activeCWD()
+	if cwd == "" {
+		w.toast.show("Current directory is unavailable")
+
+		return
+	}
+
+	expandedArgs := expandCWDArgs(args, cwd)
+
+	w.toast.show(message)
+
+	if err := exec.CommandContext(context.Background(), command, expandedArgs...).Start(); err != nil {
+		w.toast.show("Could not open application")
+
+		_, _ = fmt.Fprintf(os.Stderr, "bterm: launch %s: %v\n", command, err)
+	}
+}
+
+func expandCWDArgs(args []string, cwd string) []string {
+	expanded := make([]string, len(args))
+
+	for i, arg := range args {
+		expanded[i] = strings.ReplaceAll(arg, "{cwd}", cwd)
+	}
+
+	return expanded
 }
 
 // openNewWindow opens another application window using the active terminal directory.

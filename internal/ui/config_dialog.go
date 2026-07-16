@@ -26,6 +26,10 @@ type configForm struct {
 	heightSpin              *gtk.SpinButton
 	titleEntry              *gtk.Entry
 	terminalNotificationsDD *gtk.DropDown
+	editorEntry             *gtk.Entry
+	editorArgsEntry         *gtk.Entry
+	fileBrowserEntry        *gtk.Entry
+	fileBrowserArgsEntry    *gtk.Entry
 }
 
 // collect reads the current widget values into a new Config, using base as the
@@ -59,6 +63,10 @@ func (f *configForm) collect(base config.Config) config.Config {
 	next.WindowColumns = int(f.widthSpin.Value())
 	next.WindowRows = int(f.heightSpin.Value())
 	next.Title = f.titleEntry.Text()
+	next.Editor = f.editorEntry.Text()
+	next.EditorArgs = splitCommandArgs(f.editorArgsEntry.Text())
+	next.FileBrowser = f.fileBrowserEntry.Text()
+	next.FileBrowserArgs = splitCommandArgs(f.fileBrowserArgsEntry.Text())
 
 	if f.terminalNotificationsDD.Selected() == 0 {
 		next.TerminalNotificationMethod = config.TerminalNotificationDBus
@@ -67,6 +75,14 @@ func (f *configForm) collect(base config.Config) config.Config {
 	}
 
 	return next
+}
+
+func splitCommandArgs(text string) []string {
+	if text = strings.TrimSpace(text); text != "" {
+		return strings.Fields(text)
+	}
+
+	return nil
 }
 
 // updateSpinners commits any pending text input in spin buttons so that
@@ -148,6 +164,19 @@ func buildConfigForm(cfg config.Config) (*gtk.ScrolledWindow, configForm) { //no
 	cfgAttach(windowGrid, 1, "Rows", f.heightSpin)
 	cfgAttach(windowGrid, 2, "Title", f.titleEntry)
 
+	// Applications
+	f.editorEntry = cfgEntry(cfg.Editor, "zed")
+	f.editorArgsEntry = cfgEntry(strings.Join(cfg.EditorArgs, " "), "{cwd}")
+	f.fileBrowserEntry = cfgEntry(cfg.FileBrowser, "dolphin")
+	f.fileBrowserArgsEntry = cfgEntry(strings.Join(cfg.FileBrowserArgs, " "), "{cwd}")
+
+	applicationsGrid := cfgGrid()
+
+	cfgAttach(applicationsGrid, 0, "Editor", f.editorEntry)
+	cfgAttach(applicationsGrid, 1, "Editor args", f.editorArgsEntry)
+	cfgAttach(applicationsGrid, 2, "File browser", f.fileBrowserEntry)
+	cfgAttach(applicationsGrid, 3, "File browser args", f.fileBrowserArgsEntry)
+
 	// Assemble
 	box := gtk.NewBox(gtk.OrientationVertical, 0)
 
@@ -160,6 +189,7 @@ func buildConfigForm(cfg config.Config) (*gtk.ScrolledWindow, configForm) { //no
 		{"Shell", shellGrid},
 		{"Terminal", terminalGrid},
 		{"Window", windowGrid},
+		{"Applications", applicationsGrid},
 	}
 
 	for _, s := range sections {
@@ -296,7 +326,7 @@ func showConfigDialog(parent *gtk.ApplicationWindow, w *window) { //nolint:funle
 	win.SetTitle("Preferences")
 	win.SetTransientFor(&parent.Window)
 	win.SetModal(true)
-	win.SetDefaultSize(440, 580)
+	win.SetDefaultSize(440, 680)
 	win.SetChild(mainBox)
 
 	ctl := gtk.NewEventControllerKey()
