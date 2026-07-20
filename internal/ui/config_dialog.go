@@ -93,9 +93,9 @@ func (f *configForm) updateSpinners() {
 	f.heightSpin.Update()
 }
 
-// buildConfigForm constructs the Preferences content and returns the scroll
-// container along with a form that holds references to each widget.
-func buildConfigForm(cfg config.Config) (*gtk.ScrolledWindow, configForm) { //nolint:funlen
+// buildConfigForm constructs the Preferences content along with a form that
+// holds references to each widget.
+func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	var f configForm
 
 	// Typography
@@ -185,7 +185,7 @@ func buildConfigForm(cfg config.Config) (*gtk.ScrolledWindow, configForm) { //no
 		grid  *gtk.Grid
 	}{
 		{"Typography", typographyGrid},
-		{"Appearance", appearanceGrid},
+		{"Appearance", appearanceGrid}, //nolint:goconst // dialog section labels intentionally remain local.
 		{"Shell", shellGrid},
 		{"Terminal", terminalGrid},
 		{"Window", windowGrid},
@@ -197,7 +197,7 @@ func buildConfigForm(cfg config.Config) (*gtk.ScrolledWindow, configForm) { //no
 		box.Append(s.grid)
 	}
 
-	return cfgScroll(box), f
+	return box, f
 }
 
 func cfgSectionLabel(title string) *gtk.Label {
@@ -231,16 +231,6 @@ func cfgAttach(g *gtk.Grid, row int, label string, w gtk.Widgetter) {
 
 	g.Attach(lbl, 0, row, 1, 1)
 	g.Attach(w, 1, row, 1, 1)
-}
-
-func cfgScroll(child gtk.Widgetter) *gtk.ScrolledWindow {
-	s := gtk.NewScrolledWindow()
-
-	s.SetPolicy(gtk.PolicyNever, gtk.PolicyAutomatic)
-	s.SetVExpand(true)
-	s.SetChild(child)
-
-	return s
 }
 
 func cfgEntry(text, placeholder string) *gtk.Entry {
@@ -326,7 +316,9 @@ func showConfigDialog(parent *gtk.ApplicationWindow, w *window) { //nolint:funle
 	win.SetTitle("Preferences")
 	win.SetTransientFor(&parent.Window)
 	win.SetModal(true)
-	win.SetDefaultSize(440, 680)
+
+	applyDialogSpec(win, preferencesDialogSpec())
+
 	win.SetChild(mainBox)
 
 	ctl := gtk.NewEventControllerKey()

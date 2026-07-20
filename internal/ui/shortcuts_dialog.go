@@ -3,13 +3,32 @@ package ui
 import (
 	"strings"
 
-	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
 	"github.com/abunjevac/bterm/internal/keymap"
 )
 
 func showShortcutsDialog(parent *gtk.ApplicationWindow, layout *keymap.Layout) {
+	win := gtk.NewWindow()
+
+	win.SetTitle("Keyboard Shortcuts")
+	win.SetTransientFor(&parent.Window)
+	win.SetModal(true)
+
+	applyDialogSpec(win, shortcutsDialogSpec())
+
+	content, closeBtn := shortcutsDialogContent(buildShortcutCards(layout))
+
+	win.SetChild(content)
+
+	closeBtn.ConnectClicked(func() { win.Close() })
+
+	addEscapeClose(win)
+
+	win.Present()
+}
+
+func buildShortcutCards(layout *keymap.Layout) *gtk.Grid {
 	groups := make(map[string][]keymap.LayoutEntry)
 
 	for _, entry := range layout.Entries() {
@@ -26,8 +45,9 @@ func showShortcutsDialog(parent *gtk.ApplicationWindow, layout *keymap.Layout) {
 	cards.SetMarginBottom(16)
 	cards.SetMarginStart(20)
 	cards.SetMarginEnd(20)
+	cards.SetColumnHomogeneous(true)
 
-	groupOrder := []string{"Tabs", "Panes", "Clipboard", "Appearance", "Application", "Input", "Other"}
+	groupOrder := []string{"Tabs", "Panes", "Clipboard", "Appearance", "Application", "Input", "Other"} //nolint:goconst // shortcut group labels intentionally remain local.
 	cardIndex := 0
 
 	for _, group := range groupOrder {
@@ -42,6 +62,10 @@ func showShortcutsDialog(parent *gtk.ApplicationWindow, layout *keymap.Layout) {
 		cardIndex++
 	}
 
+	return cards
+}
+
+func shortcutsDialogContent(cards *gtk.Grid) (*gtk.Box, *gtk.Button) {
 	title := gtk.NewLabel("Keyboard Shortcuts")
 
 	title.SetHAlign(gtk.AlignStart)
@@ -73,37 +97,19 @@ func showShortcutsDialog(parent *gtk.ApplicationWindow, layout *keymap.Layout) {
 	footer.SetMarginEnd(12)
 	footer.Append(closeBtn)
 
+	scroll := gtk.NewScrolledWindow()
+
+	scroll.SetPolicy(gtk.PolicyNever, gtk.PolicyAutomatic)
+	scroll.SetVExpand(true)
+	scroll.SetChild(cards)
+
 	content := gtk.NewBox(gtk.OrientationVertical, 0)
 
 	content.Append(header)
-	content.Append(cards)
+	content.Append(scroll)
 	content.Append(footer)
 
-	win := gtk.NewWindow()
-
-	win.SetTitle("Keyboard Shortcuts")
-	win.SetTransientFor(&parent.Window)
-	win.SetModal(true)
-	win.SetDefaultSize(720, 680)
-	win.SetChild(content)
-
-	closeBtn.ConnectClicked(func() { win.Close() })
-
-	ctl := gtk.NewEventControllerKey()
-
-	ctl.SetPropagationPhase(gtk.PhaseCapture)
-	ctl.ConnectKeyPressed(func(keyval, _ uint, _ gdk.ModifierType) bool {
-		if keyval != gdk.KEY_Escape {
-			return false
-		}
-
-		win.Close()
-
-		return true
-	})
-
-	win.AddController(ctl)
-	win.Present()
+	return content, closeBtn
 }
 
 func shortcutCard(title string, entries []keymap.LayoutEntry) *gtk.Box {
