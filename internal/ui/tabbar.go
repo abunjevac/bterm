@@ -27,12 +27,30 @@ func (w *window) buildTabBar() {
 	settingsBtn.ConnectClicked(func() { showConfigDialog(w.win, w) })
 
 	header.PackStart(settingsBtn)
+
+	splitLeftRightBtn := gtk.NewButton()
+
+	splitLeftRightBtn.SetIconName("view-split-left-right-symbolic")
+	splitLeftRightBtn.SetTooltipText(headerActionTooltip(w.keys, keymap.ActionSplitLeftRight, "Split left/right"))
+	splitLeftRightBtn.AddCSSClass("flat")
+	splitLeftRightBtn.ConnectClicked(func() { w.dispatch(keymap.ActionSplitLeftRight) })
+
+	header.PackStart(splitLeftRightBtn)
+
+	splitTopBottomBtn := gtk.NewButton()
+
+	splitTopBottomBtn.SetIconName("view-split-top-bottom-symbolic")
+	splitTopBottomBtn.SetTooltipText(headerActionTooltip(w.keys, keymap.ActionSplitTopBottom, "Split top/bottom"))
+	splitTopBottomBtn.AddCSSClass("flat")
+	splitTopBottomBtn.ConnectClicked(func() { w.dispatch(keymap.ActionSplitTopBottom) })
+
+	header.PackStart(splitTopBottomBtn)
 	header.PackStart(w.tabBox)
 
 	addBtn := gtk.NewButton()
 
 	addBtn.SetIconName("list-add-symbolic")
-	addBtn.SetTooltipText("New tab (" + formatBinding(w.keys.BindingFor(keymap.ActionNewTabEnd)) + ")")
+	addBtn.SetTooltipText(headerActionTooltip(w.keys, keymap.ActionNewTabEnd, "New tab"))
 	addBtn.AddCSSClass("flat")
 	addBtn.ConnectClicked(func() { w.newTabEnd() })
 
@@ -287,6 +305,17 @@ func formatBinding(b string) string {
 	}
 
 	return strings.Join(parts, "+")
+}
+
+// headerActionTooltip returns a label with the action's current shortcut when bound.
+func headerActionTooltip(keys *keymap.Layout, action keymap.Action, label string) string {
+	binding := formatBinding(keys.BindingFor(action))
+
+	if binding == "" {
+		return label
+	}
+
+	return label + " (" + binding + ")"
 }
 
 // menuItem returns a flat button with a leading symbolic icon and a text label.
