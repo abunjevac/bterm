@@ -45,7 +45,6 @@ func (w *window) buildTabBar() {
 	splitTopBottomBtn.ConnectClicked(func() { w.dispatch(keymap.ActionSplitTopBottom) })
 
 	header.PackStart(splitTopBottomBtn)
-	header.PackStart(w.tabBox)
 
 	addBtn := gtk.NewButton()
 
@@ -54,7 +53,8 @@ func (w *window) buildTabBar() {
 	addBtn.AddCSSClass("flat")
 	addBtn.ConnectClicked(func() { w.newTabEnd() })
 
-	header.PackEnd(addBtn)
+	header.PackStart(addBtn)
+	header.PackStart(w.tabBox)
 
 	menuBtn := gtk.NewMenuButton()
 
