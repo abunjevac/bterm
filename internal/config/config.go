@@ -25,6 +25,7 @@ type Config struct {
 	Shell                      string   `toml:"shell"`
 	ShellArgs                  []string `toml:"shell_args"`
 	Scrollback                 int      `toml:"scrollback"`
+	ShowScrollbar              bool     `toml:"show_scrollbar"`
 	WindowColumns              int      `toml:"window_columns"`
 	WindowRows                 int      `toml:"window_rows"`
 	Title                      string   `toml:"title"`

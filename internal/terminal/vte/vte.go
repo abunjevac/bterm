@@ -24,9 +24,10 @@ import (
 
 // Terminal implements terminal.Terminal via the VTE cgo bridge.
 type Terminal struct {
-	ptr    *C.VteTerminal
-	widget gtk.Widgetter
-	id     int
+	ptr      *C.VteTerminal
+	widget   gtk.Widgetter
+	scrolled *gtk.ScrolledWindow
+	id       int
 
 	frontend *os.File
 	backend  *os.File
@@ -68,12 +69,22 @@ func New() *Terminal {
 		panic("vte: VTE widget does not implement gtk.Widgetter")
 	}
 
+	sw := gtk.NewScrolledWindow()
+
+	sw.SetChild(w)
+	sw.SetPolicy(gtk.PolicyNever, gtk.PolicyNever)
+	sw.SetPropagateNaturalWidth(true)
+	sw.SetPropagateNaturalHeight(true)
+	sw.SetHExpand(true)
+	sw.SetVExpand(true)
+
 	t := &Terminal{
-		ptr:     ptr,
-		widget:  w,
-		id:      int(nextID.Add(1)),
-		columns: 80,
-		rows:    24,
+		ptr:      ptr,
+		widget:   w,
+		scrolled: sw,
+		id:       int(nextID.Add(1)),
+		columns:  80,
+		rows:     24,
 	}
 
 	regMu.Lock()
@@ -87,7 +98,7 @@ func New() *Terminal {
 }
 
 // Widget returns the underlying GTK widget for embedding in a layout.
-func (t *Terminal) Widget() gtk.Widgetter { return t.widget }
+func (t *Terminal) Widget() gtk.Widgetter { return t.scrolled }
 
 // Spawn starts shell asynchronously. cb is called on the GTK main thread.
 func (t *Terminal) Spawn(workingDir, shell string, args []string, cb terminal.SpawnCallback) {
@@ -134,6 +145,15 @@ func (t *Terminal) SetFont(family string, size float64) {
 // SetScrollback configures the scrollback buffer size in lines.
 func (t *Terminal) SetScrollback(lines int) {
 	C.vteSetScrollback(t.ptr, C.long(lines))
+}
+
+// SetScrollbar shows or hides the vertical scrollbar.
+func (t *Terminal) SetScrollbar(visible bool) {
+	if visible {
+		t.scrolled.SetPolicy(gtk.PolicyNever, gtk.PolicyAutomatic)
+	} else {
+		t.scrolled.SetPolicy(gtk.PolicyNever, gtk.PolicyNever)
+	}
 }
 
 // SetSize sets the terminal's preferred size in character columns and rows.

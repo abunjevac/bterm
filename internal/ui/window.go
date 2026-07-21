@@ -86,6 +86,7 @@ func (w *window) spawnTerm(t terminal.Terminal, workingDir string) {
 	t.SetFont(w.fontFamily, w.fontSize)
 	t.SetColors(w.palette)
 	t.SetScrollback(cfg.Scrollback)
+	t.SetScrollbar(cfg.ShowScrollbar)
 	w.installTerminalNotifications(t)
 
 	if len(w.tabs) == 0 {
@@ -119,6 +120,14 @@ func (w *window) applyNewConfig(old, next config.Config) {
 			}
 
 			t.SetColors(w.palette)
+
+			if next.ShowScrollbar != old.ShowScrollbar {
+				t.SetScrollbar(next.ShowScrollbar)
+			}
+
+			if next.Scrollback != old.Scrollback {
+				t.SetScrollback(next.Scrollback)
+			}
 		}
 	}
 }

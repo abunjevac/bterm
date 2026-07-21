@@ -94,6 +94,7 @@ func (pa *paneArea) spawnInTerm(t terminal.Terminal, workingDir string) {
 	t.SetFont(pa.win.fontFamily, pa.win.fontSize)
 	t.SetColors(pa.win.palette)
 	t.SetScrollback(cfg.Scrollback)
+	t.SetScrollbar(cfg.ShowScrollbar)
 
 	pa.win.installTerminalNotifications(t)
 

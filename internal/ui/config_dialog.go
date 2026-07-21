@@ -22,6 +22,7 @@ type configForm struct {
 	shellEntry              *gtk.Entry
 	shellArgsEntry          *gtk.Entry
 	scrollbackSpin          *gtk.SpinButton
+	scrollbarSwitch         *gtk.Switch
 	widthSpin               *gtk.SpinButton
 	heightSpin              *gtk.SpinButton
 	titleEntry              *gtk.Entry
@@ -60,6 +61,7 @@ func (f *configForm) collect(base config.Config) config.Config {
 	}
 
 	next.Scrollback = int(f.scrollbackSpin.Value())
+	next.ShowScrollbar = f.scrollbarSwitch.Active()
 	next.WindowColumns = int(f.widthSpin.Value())
 	next.WindowRows = int(f.heightSpin.Value())
 	next.Title = f.titleEntry.Text()
@@ -138,6 +140,11 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 
 	// Terminal
 	f.scrollbackSpin = cfgSpin(100, 200000, 100, float64(cfg.Scrollback))
+	f.scrollbarSwitch = gtk.NewSwitch()
+
+	f.scrollbarSwitch.SetActive(cfg.ShowScrollbar)
+	f.scrollbarSwitch.SetHAlign(gtk.AlignStart)
+
 	f.terminalNotificationsDD = gtk.NewDropDownFromStrings([]string{"D-Bus", "Off"})
 
 	if cfg.TerminalNotificationMethod == config.TerminalNotificationDBus {
@@ -151,7 +158,8 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	terminalGrid := cfgGrid()
 
 	cfgAttach(terminalGrid, 0, "Scrollback lines", f.scrollbackSpin)
-	cfgAttach(terminalGrid, 1, "Terminal notifications", f.terminalNotificationsDD)
+	cfgAttach(terminalGrid, 1, "Show scrollbar", f.scrollbarSwitch)
+	cfgAttach(terminalGrid, 2, "Terminal notifications", f.terminalNotificationsDD)
 
 	// Window
 	f.widthSpin = cfgSpin(40, 500, 1, float64(cfg.WindowColumns))
