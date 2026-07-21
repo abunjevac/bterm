@@ -216,6 +216,14 @@ func (pa *paneArea) focusedTerminal() terminal.Terminal {
 // grabFocus gives keyboard focus to the focused pane's widget.
 func (pa *paneArea) grabFocus() {
 	if w := pa.widgets[pa.tree.Focused()]; w != nil {
+		if sw, ok := w.(*gtk.ScrolledWindow); ok {
+			if child := sw.Child(); child != nil {
+				gtk.BaseWidget(child).GrabFocus()
+
+				return
+			}
+		}
+
 		gtk.BaseWidget(w).GrabFocus()
 	}
 }
