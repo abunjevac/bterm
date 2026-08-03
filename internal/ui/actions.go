@@ -175,6 +175,8 @@ func (w *window) dispatchPane(pa *paneArea, a keymap.Action) {
 		pa.resetFocused()
 	case keymap.ActionSendNewline:
 		pa.sendNewlineToFocused()
+	case keymap.ActionShowContextMenu:
+		pa.showFocusedContextMenu()
 	default:
 		pa.dispatchDir(a)
 	}

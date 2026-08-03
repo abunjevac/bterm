@@ -30,6 +30,25 @@ func (pa *paneArea) installTerminalContextMenu(id int, widget gtk.Widgetter) {
 	gtk.BaseWidget(widget).AddController(gesture)
 }
 
+// showFocusedContextMenu opens the context menu for the focused pane,
+// positioned at the center of the terminal widget.
+func (pa *paneArea) showFocusedContextMenu() {
+	id := pa.tree.Focused()
+
+	if id == 0 {
+		return
+	}
+
+	widget := pa.widgets[id]
+
+	if widget == nil {
+		return
+	}
+
+	w := gtk.BaseWidget(widget)
+	pa.showContextMenu(id, widget, float64(w.Width())/2, float64(w.Height())/2)
+}
+
 func (pa *paneArea) showContextMenu(id int, widget gtk.Widgetter, x, y float64) {
 	var openSubmenu *gtk.Popover
 
