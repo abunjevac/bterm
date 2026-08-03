@@ -3,6 +3,7 @@ package ui
 import (
 	"os"
 
+	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
 	"github.com/abunjevac/bterm/internal/config"
@@ -74,6 +75,7 @@ func (pa *paneArea) registerTerm(id int, t terminal.Terminal) {
 	pa.widgets[id] = w
 
 	pa.installTerminalContextMenu(id, w)
+	pa.installFontScroll(id, w)
 
 	t.OnChildExited(func(_ int) {
 		pa.closeID(id)
@@ -226,6 +228,39 @@ func (pa *paneArea) grabFocus() {
 
 		gtk.BaseWidget(w).GrabFocus()
 	}
+}
+
+// installFontScroll attaches a scroll controller that adjusts the font size
+// when Ctrl is held while scrolling.
+func (pa *paneArea) installFontScroll(id int, widget gtk.Widgetter) {
+	scroll := gtk.NewEventControllerScroll(gtk.EventControllerScrollBothAxes)
+
+	scroll.SetPropagationPhase(gtk.PhaseCapture)
+	scroll.ConnectScroll(func(_ float64, dy float64) bool {
+		if scroll.CurrentEventState()&gdk.ControlMask == 0 {
+			return false
+		}
+
+		t := pa.terms[id]
+
+		if t == nil {
+			return false
+		}
+
+		if dy < 0 {
+			pa.win.fontSize++
+		} else {
+			if pa.win.fontSize > 4 {
+				pa.win.fontSize--
+			}
+		}
+
+		t.SetFont(pa.win.fontFamily, pa.win.fontSize)
+
+		return true
+	})
+
+	gtk.BaseWidget(widget).AddController(scroll)
 }
 
 // rebuild replaces the child of pa.root with a freshly-built widget tree

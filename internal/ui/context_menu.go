@@ -46,6 +46,7 @@ func (pa *paneArea) showFocusedContextMenu() {
 	}
 
 	w := gtk.BaseWidget(widget)
+
 	pa.showContextMenu(id, widget, float64(w.Width())/2, float64(w.Height())/2)
 }
 
