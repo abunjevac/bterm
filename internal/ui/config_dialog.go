@@ -17,6 +17,7 @@ import (
 // configForm holds all editable widgets in the Preferences dialog.
 type configForm struct {
 	fontBtn                 *gtk.FontDialogButton
+	uiFontBtn               *gtk.FontDialogButton
 	themeDD                 *gtk.DropDown
 	themes                  []string
 	shellEntry              *gtk.Entry
@@ -45,6 +46,16 @@ func (f *configForm) collect(base config.Config) config.Config {
 
 		if sz := desc.Size(); sz > 0 {
 			next.FontSize = float64(sz) / pango.SCALE
+		}
+	}
+
+	if desc := f.uiFontBtn.FontDesc(); desc != nil {
+		if fam := desc.Family(); fam != "" {
+			next.UIFont = fam
+		}
+
+		if sz := desc.Size(); sz > 0 {
+			next.UIFontSize = float64(sz) / pango.SCALE
 		}
 	}
 
@@ -117,6 +128,30 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	typographyGrid := cfgGrid()
 
 	cfgAttach(typographyGrid, 0, "Font", f.fontBtn)
+
+	// UI font (optional — leave unset to use system default)
+	uiFontDlg := gtk.NewFontDialog()
+
+	f.uiFontBtn = gtk.NewFontDialogButton(uiFontDlg)
+
+	f.uiFontBtn.SetLevel(gtk.FontLevelFont)
+	f.uiFontBtn.SetHExpand(true)
+
+	if cfg.UIFont != "" || cfg.UIFontSize > 0 {
+		uiFontDesc := pango.NewFontDescription()
+
+		if cfg.UIFont != "" {
+			uiFontDesc.SetFamily(cfg.UIFont)
+		}
+
+		if cfg.UIFontSize > 0 {
+			uiFontDesc.SetSize(int(cfg.UIFontSize * pango.SCALE))
+		}
+
+		f.uiFontBtn.SetFontDesc(uiFontDesc)
+	}
+
+	cfgAttach(typographyGrid, 1, "UI font", f.uiFontBtn)
 
 	// Appearance
 	f.themes = theme.BuiltinNames()

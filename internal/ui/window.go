@@ -29,6 +29,8 @@ type window struct {
 	fontFamily      string
 	fontSize        float64
 	defaultFontSize float64
+	uiFontFamily    string
+	uiFontSize      float64
 	palette         *theme.Palette
 	newTerm         terminal.Factory
 }
@@ -52,6 +54,8 @@ func newEmptyWindow(app *gtk.Application, bundle *config.Bundle, workingDir stri
 		fontFamily:      cfg.Font,
 		fontSize:        cfg.FontSize,
 		defaultFontSize: cfg.FontSize,
+		uiFontFamily:    cfg.UIFont,
+		uiFontSize:      cfg.UIFontSize,
 		palette:         theme.Load(bundle.Dir, cfg.Theme),
 		newTerm:         func() terminal.Terminal { return vtepkg.New() },
 	}
@@ -61,7 +65,7 @@ func newEmptyWindow(app *gtk.Application, bundle *config.Bundle, workingDir stri
 	w.win.SetTitle(cfg.Title)
 	w.win.SetIconName("io.github.abunjevac.bterm")
 
-	applyStyle(w.palette)
+	applyStyle(w.palette, w.uiFontFamily, w.uiFontSize)
 
 	w.buildTabBar()
 
@@ -98,7 +102,7 @@ func (w *window) spawnTerm(t terminal.Terminal, workingDir string) {
 
 // applyNewConfig applies live changes from a preferences save. Font and theme
 // are updated immediately; other settings take effect on next launch.
-func (w *window) applyNewConfig(old, next config.Config) {
+func (w *window) applyNewConfig(old, next config.Config) { //nolint:cyclop // live config application needs per-field checks
 	fontChanged := next.Font != old.Font || next.FontSize != old.FontSize
 
 	if fontChanged {
@@ -107,10 +111,19 @@ func (w *window) applyNewConfig(old, next config.Config) {
 		w.fontSize = next.FontSize
 	}
 
-	if next.Theme != old.Theme {
-		w.palette = theme.Load(w.bundle.Dir, next.Theme)
+	uiFontChanged := next.UIFont != old.UIFont || next.UIFontSize != old.UIFontSize
 
-		applyStyle(w.palette)
+	if uiFontChanged {
+		w.uiFontFamily = next.UIFont
+		w.uiFontSize = next.UIFontSize
+	}
+
+	if next.Theme != old.Theme || uiFontChanged {
+		if next.Theme != old.Theme {
+			w.palette = theme.Load(w.bundle.Dir, next.Theme)
+		}
+
+		applyStyle(w.palette, w.uiFontFamily, w.uiFontSize)
 	}
 
 	for _, tab := range w.tabs {

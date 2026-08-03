@@ -21,6 +21,8 @@ const (
 type Config struct {
 	Font                       string   `toml:"font"`
 	FontSize                   float64  `toml:"font_size"`
+	UIFont                     string   `toml:"ui_font"`
+	UIFontSize                 float64  `toml:"ui_font_size"`
 	Theme                      string   `toml:"theme"`
 	Shell                      string   `toml:"shell"`
 	ShellArgs                  []string `toml:"shell_args"`

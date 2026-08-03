@@ -36,6 +36,8 @@ func TestParseOverrides(t *testing.T) {
 
 	require.Equal(t, "JetBrains Mono", cfg.Font)
 	require.InEpsilon(t, 14.0, cfg.FontSize, 0.001)
+	require.Equal(t, "Ubuntu Sans", cfg.UIFont)
+	require.InEpsilon(t, 11.0, cfg.UIFontSize, 0.001)
 	require.Equal(t, "tokyo-night", cfg.Theme)
 	require.Equal(t, 10000, cfg.Scrollback)
 	require.Equal(t, "off", cfg.TerminalNotificationMethod)

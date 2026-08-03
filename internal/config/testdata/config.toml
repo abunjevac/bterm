@@ -1,5 +1,7 @@
 font = "JetBrains Mono"
 font_size = 14
+ui_font = "Ubuntu Sans"
+ui_font_size = 11
 theme = "tokyo-night"
 scrollback = 10000
 terminal_notification_method = "off"
