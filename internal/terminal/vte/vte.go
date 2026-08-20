@@ -218,8 +218,8 @@ func (t *Terminal) CurrentDir() string {
 }
 
 // FeedChild writes data to the terminal's child process as if typed.
-// Used to inject bytes (e.g. a newline) that VTE's legacy key encoding
-// cannot represent, such as Shift+Enter.
+// Used to inject bytes (e.g. a bracketed-paste-wrapped newline) that VTE's
+// legacy key encoding cannot represent, such as Shift+Enter.
 func (t *Terminal) FeedChild(data []byte) {
 	if len(data) == 0 {
 		return

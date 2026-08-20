@@ -233,13 +233,22 @@ func (pa *paneArea) resetFocused() {
 	}
 }
 
-// sendNewlineToFocused feeds a literal newline (LF) to the focused terminal's
-// child. VTE's legacy key encoding collapses Shift+Enter and Ctrl+Enter to a
-// carriage return, so apps cannot tell them from plain Enter; sending LF gives
-// apps that treat LF as "insert newline" a distinct keystroke to bind.
+// bracketedNewline is a literal LF wrapped in bracketed-paste markers
+// (xterm mode 2004: ESC[200~ ... ESC[201~). Apps that enable bracketed paste
+// treat everything between the markers as a single atomic block of literal
+// text rather than keystrokes, so the embedded LF is inserted rather than
+// submitting the line — unlike a bare LF, which some apps (e.g. Codebuff)
+// treat the same as a plain Enter outside of a paste.
+var bracketedNewline = []byte("\x1b[200~\n\x1b[201~")
+
+// sendNewlineToFocused feeds a bracketed-paste-wrapped newline to the focused
+// terminal's child. VTE's legacy key encoding collapses Shift+Enter and
+// Ctrl+Enter to a carriage return, so apps cannot tell them from plain Enter;
+// this gives apps that support bracketed paste a distinct, unambiguous way to
+// receive a literal newline instead of an Enter keystroke.
 func (pa *paneArea) sendNewlineToFocused() {
 	if t := pa.focusedTerminal(); t != nil {
-		t.FeedChild([]byte{'\n'})
+		t.FeedChild(bracketedNewline)
 	}
 }
 
