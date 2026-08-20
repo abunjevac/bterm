@@ -225,6 +225,24 @@ func (w *window) closeTab(t *tab) {
 	w.selectTab(w.active)
 }
 
+// swapAdjacentTabs swaps the tabs at indices i and i+1, keeping w.tabs,
+// w.tabBox child order, w.active and the number badges in sync.
+func (w *window) swapAdjacentTabs(i int) {
+	j := i + 1
+
+	w.tabs[i], w.tabs[j] = w.tabs[j], w.tabs[i]
+	w.tabBox.ReorderChildAfter(w.tabs[j].label, w.tabs[i].label)
+
+	switch w.active {
+	case i:
+		w.active = j
+	case j:
+		w.active = i
+	}
+
+	w.renumber()
+}
+
 // tabIndex returns the position of t in w.tabs, or -1 if not found.
 func (w *window) tabIndex(t *tab) int {
 	for i, tab := range w.tabs {

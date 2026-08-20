@@ -10,6 +10,14 @@ import (
 
 const tabDetachDragThreshold = 72
 
+// tabReorderCrossFraction is the fraction of a neighboring tab's width the
+// pointer must cross before it swaps places with the dragged tab. Without
+// any slide animation, each swap is an instant re-layout of the tab strip;
+// requiring most of the neighbor's width to be crossed (rather than just
+// half) gives dragging a dead zone that absorbs ordinary hand jitter, so
+// swaps fire noticeably less often during a drag.
+const tabReorderCrossFraction = 0.9
+
 // tab represents one terminal tab: a pane layout, its current title, and the
 // header-bar label widget.
 type tab struct {
@@ -79,17 +87,28 @@ func (t *tab) buildLabel(w *window, idx int) {
 func installTabDetachDrag(selectBtn *gtk.Button, w *window, t *tab) {
 	drag := gtk.NewGestureDrag()
 
+	// consumedX tracks how much of the gesture's cumulative offset has
+	// already been applied as tab swaps, since GestureDrag reports offsets
+	// relative to the drag start point rather than as per-update deltas.
+	var consumedX float64
+
 	drag.SetButton(1)
 	drag.SetExclusive(true)
 	drag.SetPropagationPhase(gtk.PhaseCapture)
 	drag.ConnectDragBegin(func(_, _ float64) {
 		drag.SetState(gtk.EventSequenceClaimed)
+
+		consumedX = 0
+
 		setDragSurfaceCursor(selectBtn, "move")
+
 		selectBtn.AddCSSClass("bterm-tab-dragging")
 		t.label.AddCSSClass("bterm-tab-dragging")
 	})
-	drag.ConnectDragUpdate(func(_, _ float64) {
+	drag.ConnectDragUpdate(func(offsetX, _ float64) {
 		setDragSurfaceCursor(selectBtn, "move")
+
+		consumedX = reorderTabOnDrag(w, t, offsetX, consumedX)
 	})
 	drag.ConnectDragEnd(func(_, offsetY float64) {
 		setDragSurfaceCursor(selectBtn, "")
@@ -104,6 +123,47 @@ func installTabDetachDrag(selectBtn *gtk.Button, w *window, t *tab) {
 		w.detachTab(t)
 	})
 	selectBtn.AddController(drag)
+}
+
+// reorderTabOnDrag swaps t with a neighboring tab whenever the cumulative
+// drag offsetX has crossed that neighbor's midpoint, repeating until no
+// further swap is warranted. consumedX is the portion of offsetX already
+// applied by prior swaps; the returned value updates it for the next call.
+func reorderTabOnDrag(w *window, t *tab, offsetX, consumedX float64) float64 {
+	for {
+		idx := w.tabIndex(t)
+
+		if idx < 0 {
+			return consumedX
+		}
+
+		delta := offsetX - consumedX
+
+		switch {
+		case delta > 0 && idx+1 < len(w.tabs):
+			neighborWidth := float64(w.tabs[idx+1].label.Width())
+
+			if delta <= neighborWidth*tabReorderCrossFraction {
+				return consumedX
+			}
+
+			w.swapAdjacentTabs(idx)
+
+			consumedX += neighborWidth
+		case delta < 0 && idx > 0:
+			neighborWidth := float64(w.tabs[idx-1].label.Width())
+
+			if -delta <= neighborWidth*tabReorderCrossFraction {
+				return consumedX
+			}
+
+			w.swapAdjacentTabs(idx - 1)
+
+			consumedX -= neighborWidth
+		default:
+			return consumedX
+		}
+	}
 }
 
 func setDragSurfaceCursor(widget gtk.Widgetter, name string) {
