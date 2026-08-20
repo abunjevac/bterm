@@ -90,14 +90,15 @@ func TestDefaultLayout(t *testing.T) {
 	require.Equal(t, keymap.ActionFontDec, layout.Lookup("ctrl+minus"))
 	require.Equal(t, keymap.ActionFontReset, layout.Lookup("ctrl+kp_multiply"))
 	require.Equal(t, keymap.ActionFontReset, layout.Lookup("ctrl+0"))
-	require.Equal(t, keymap.ActionSendNewline, layout.Lookup("shift+return"))
 	require.Equal(t, keymap.ActionSendNewline, layout.Lookup("ctrl+return"))
+	require.Equal(t, keymap.ActionSendNewlinePlain, layout.Lookup("shift+return"))
 	require.Equal(t, keymap.ActionOpenEditor, layout.Lookup("ctrl+shift+i"))
 	require.Equal(t, keymap.ActionOpenFileBrowser, layout.Lookup("ctrl+shift+f"))
 }
 
 func TestSendNewlineActionName(t *testing.T) {
 	require.Equal(t, "send_newline", keymap.ActionSendNewline.String())
+	require.Equal(t, "send_newline_plain", keymap.ActionSendNewlinePlain.String())
 }
 
 func TestDefaultLayoutNoConflicts(t *testing.T) {

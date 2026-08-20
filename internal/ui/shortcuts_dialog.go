@@ -171,7 +171,8 @@ func shortcutGroup(action keymap.Action) string {
 	case keymap.ActionOpenConfig, keymap.ActionNewWindow, keymap.ActionCloseWindow,
 		keymap.ActionOpenEditor, keymap.ActionOpenFileBrowser:
 		return "Application"
-	case keymap.ActionClear, keymap.ActionReset, keymap.ActionSendNewline, keymap.ActionShowContextMenu:
+	case keymap.ActionClear, keymap.ActionReset, keymap.ActionSendNewline, keymap.ActionSendNewlinePlain,
+		keymap.ActionShowContextMenu:
 		return "Input"
 	default:
 		return "Other"

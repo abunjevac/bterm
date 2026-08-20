@@ -175,6 +175,8 @@ func (w *window) dispatchPane(pa *paneArea, a keymap.Action) {
 		pa.resetFocused()
 	case keymap.ActionSendNewline:
 		pa.sendNewlineToFocused()
+	case keymap.ActionSendNewlinePlain:
+		pa.sendNewlinePlainToFocused()
 	case keymap.ActionShowContextMenu:
 		pa.showFocusedContextMenu()
 	default:
@@ -238,17 +240,25 @@ func (pa *paneArea) resetFocused() {
 // treat everything between the markers as a single atomic block of literal
 // text rather than keystrokes, so the embedded LF is inserted rather than
 // submitting the line — unlike a bare LF, which some apps (e.g. Codebuff)
-// treat the same as a plain Enter outside of a paste.
+// treat the same as a plain Enter outside of a paste block.
 var bracketedNewline = []byte("\x1b[200~\n\x1b[201~")
 
 // sendNewlineToFocused feeds a bracketed-paste-wrapped newline to the focused
-// terminal's child. VTE's legacy key encoding collapses Shift+Enter and
-// Ctrl+Enter to a carriage return, so apps cannot tell them from plain Enter;
-// this gives apps that support bracketed paste a distinct, unambiguous way to
-// receive a literal newline instead of an Enter keystroke.
+// terminal's child. Bound to Ctrl+Enter, a fallback for apps (e.g. Codebuff)
+// that treat a bare LF the same as Enter outside of a bracketed-paste block.
 func (pa *paneArea) sendNewlineToFocused() {
 	if t := pa.focusedTerminal(); t != nil {
 		t.FeedChild(bracketedNewline)
+	}
+}
+
+// sendNewlinePlainToFocused feeds a bare LF to the focused terminal's child,
+// with no bracketed-paste wrapping. Bound to Shift+Enter, the binding most
+// apps (Claude Code, Codex, Copilot CLI) expect for "insert newline" instead
+// of an Enter keystroke.
+func (pa *paneArea) sendNewlinePlainToFocused() {
+	if t := pa.focusedTerminal(); t != nil {
+		t.FeedChild([]byte{'\n'})
 	}
 }
 
