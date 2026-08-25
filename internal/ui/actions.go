@@ -164,8 +164,9 @@ func (w *window) dispatchPane(pa *paneArea, a keymap.Action) {
 	case keymap.ActionClosePane:
 		pa.closeFocused()
 	case keymap.ActionCopy:
-		pa.copyFromFocused()
-		w.toast.show("⧉ Copied")
+		if pa.copyFromFocused() {
+			w.toast.show("⧉ Copied")
+		}
 	case keymap.ActionPaste:
 		pa.pasteToFocused()
 		w.toast.show("⧉ Pasted")
@@ -208,10 +209,21 @@ func (pa *paneArea) dispatchDir(a keymap.Action) {
 }
 
 // copyFromFocused copies the selection from the focused terminal.
-func (pa *paneArea) copyFromFocused() {
-	if t := pa.focusedTerminal(); t != nil {
-		t.Copy()
+// Returns false when there is no selection to copy.
+func (pa *paneArea) copyFromFocused() bool {
+	t := pa.focusedTerminal()
+	if t == nil {
+		return false
 	}
+
+	st, ok := t.(selectionTerminal)
+	if !ok || !st.HasSelection() {
+		return false
+	}
+
+	t.Copy()
+
+	return true
 }
 
 // pasteToFocused pastes clipboard contents into the focused terminal.
