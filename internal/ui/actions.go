@@ -9,6 +9,7 @@ import (
 
 	"github.com/abunjevac/bterm/internal/keymap"
 	"github.com/abunjevac/bterm/internal/ui/panetree"
+	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 )
 
 type clearTerminal interface {
@@ -165,11 +166,13 @@ func (w *window) dispatchPane(pa *paneArea, a keymap.Action) {
 		pa.closeFocused()
 	case keymap.ActionCopy:
 		if pa.copyFromFocused() {
+			w.reownClipboard()
 			w.toast.show("⧉ Copied")
 		}
 	case keymap.ActionPaste:
-		pa.pasteToFocused()
-		w.toast.show("⧉ Pasted")
+		if pa.pasteToFocused() {
+			w.toast.show("⧉ Pasted")
+		}
 	case keymap.ActionClear:
 		pa.clearFocused()
 	case keymap.ActionReset:
@@ -227,10 +230,39 @@ func (pa *paneArea) copyFromFocused() bool {
 }
 
 // pasteToFocused pastes clipboard contents into the focused terminal.
-func (pa *paneArea) pasteToFocused() {
-	if t := pa.focusedTerminal(); t != nil {
-		t.Paste()
+// Returns false when the clipboard has no text content to paste.
+func (pa *paneArea) pasteToFocused() bool {
+	t := pa.focusedTerminal()
+	if t == nil {
+		return false
 	}
+
+	clip := pa.win.clipboard()
+	if clip == nil {
+		return false
+	}
+
+	// Check if the clipboard currently offers any text format before pasting.
+	// Different applications report text with different MIME types
+	// (text/plain, text/plain;charset=utf-8, UTF8_STRING, etc.).
+	if !clipboardHasText(clip) {
+		return false
+	}
+
+	t.Paste()
+
+	return true
+}
+
+// clipboardHasText reports whether the clipboard offers any text-like format.
+func clipboardHasText(clip *gdk.Clipboard) bool {
+	for _, mime := range clip.Formats().MIMETypes() {
+		if strings.HasPrefix(mime, "text/") || mime == "UTF8_STRING" {
+			return true
+		}
+	}
+
+	return false
 }
 
 // clearFocused clears the focused terminal's screen and scrollback.

@@ -1,8 +1,12 @@
 package ui
 
 import (
+	"context"
 	"os"
 
+	"github.com/diamondburned/gotk4/pkg/core/glib"
+	"github.com/diamondburned/gotk4/pkg/gdk/v4"
+	"github.com/diamondburned/gotk4/pkg/gio/v2"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
 	"github.com/abunjevac/bterm/internal/config"
@@ -166,4 +170,39 @@ func shellArgs(cfg *config.Config) []string {
 	}
 
 	return []string{"-l"}
+}
+
+// clipboard returns the GDK system clipboard for this window's display.
+func (w *window) clipboard() *gdk.Clipboard {
+	if w.win == nil {
+		return nil
+	}
+
+	return gtk.BaseWidget(w.win).Display().Clipboard()
+}
+
+// reownClipboard reads the current clipboard text and writes it back with
+// SetText, transferring ownership from the VTE widget to the application.
+// Without this, closing the terminal that owned the clipboard clears it.
+func (w *window) reownClipboard() {
+	clip := w.clipboard()
+	if clip == nil {
+		return
+	}
+
+	// ReadTextAsync must be called from the GTK main thread.
+	glib.IdleAdd(func() bool {
+		clip.ReadTextAsync(context.Background(), func(res gio.AsyncResulter) {
+			text, err := clip.ReadTextFinish(res)
+			if err != nil || text == "" {
+				return
+			}
+
+			// Re-set the text so the application owns the clipboard content,
+			// independent of the VTE widget's lifetime.
+			clip.SetText(text)
+		})
+
+		return false
+	})
 }

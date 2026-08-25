@@ -38,6 +38,7 @@ func (w *window) installTerminalNotifications(t terminal.Terminal) {
 func (w *window) installClipboardDetection(t terminal.Terminal) {
 	t.OnClipboardCopy(func() {
 		glib.IdleAdd(func() bool {
+			w.reownClipboard()
 			w.toast.show("⧉ Copied")
 
 			return false
