@@ -92,6 +92,7 @@ func (w *window) spawnTerm(t terminal.Terminal, workingDir string) {
 	t.SetScrollback(cfg.Scrollback)
 	t.SetScrollbar(cfg.ShowScrollbar)
 	w.installTerminalNotifications(t)
+	w.installClipboardDetection(t)
 
 	if len(w.tabs) == 0 {
 		t.SetSize(cfg.WindowColumns, cfg.WindowRows)

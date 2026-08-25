@@ -38,9 +38,10 @@ type Terminal struct {
 	columns int
 	rows    int
 
-	onTitle        func(string)
-	onNotification func(title, message string)
-	onExit         func(int)
+	onTitle         func(string)
+	onNotification  func(title, message string)
+	onClipboardCopy func()
+	onExit          func(int)
 }
 
 //nolint:gochecknoglobals
@@ -263,6 +264,10 @@ func (t *Terminal) OnTitleChanged(f func(string)) { t.onTitle = f }
 // OnNotification sets the callback invoked when the shell requests a terminal notification.
 func (t *Terminal) OnNotification(f func(title, message string)) { t.onNotification = f }
 
+// OnClipboardCopy sets the callback invoked when a program copies text to the
+// clipboard via OSC 52.
+func (t *Terminal) OnClipboardCopy(f func()) { t.onClipboardCopy = f }
+
 // OnChildExited sets the callback invoked when the shell process exits.
 func (t *Terminal) OnChildExited(f func(int)) { t.onExit = f }
 
@@ -288,15 +293,19 @@ func (t *Terminal) copyBackendToFrontend() {
 	for {
 		n, err := t.backend.Read(buf)
 		if n > 0 {
-			out, notes := parser.Filter(buf[:n])
-			for _, note := range notes {
+			result := parser.Filter(buf[:n])
+			for _, note := range result.notes {
 				if t.onNotification != nil {
 					t.onNotification(note.Title, note.Message)
 				}
 			}
 
-			if len(out) > 0 {
-				_, _ = t.frontend.Write(out)
+			if result.clipboardCopied && t.onClipboardCopy != nil {
+				t.onClipboardCopy()
+			}
+
+			if len(result.out) > 0 {
+				_, _ = t.frontend.Write(result.out)
 			}
 		}
 

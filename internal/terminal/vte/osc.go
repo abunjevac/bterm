@@ -13,20 +13,22 @@ type oscParser struct {
 
 const maxPendingOSC = 64 * 1024
 
-func (p *oscParser) Filter(data []byte) ([]byte, []terminalNotification) {
-	if len(p.pending) > 0 {
-		combined := make([]byte, 0, len(p.pending)+len(data))
+// oscResult holds the output of filtering a chunk of terminal data.
+type oscResult struct {
+	// out is the data to forward to the terminal widget.
+	out []byte
+	// notes are terminal notifications extracted from OSC sequences.
+	notes []terminalNotification
+	// clipboardCopied is true when an OSC 52 clipboard-write sequence was observed.
+	clipboardCopied bool
+}
 
-		combined = append(combined, p.pending...)
-		combined = append(combined, data...)
-
-		data = combined
-
-		p.pending = nil
-	}
+func (p *oscParser) Filter(data []byte) oscResult {
+	data = p.prependPending(data)
 
 	out := make([]byte, 0, len(data))
 	notes := make([]terminalNotification, 0)
+	clipboardCopied := false
 
 	for len(data) > 0 {
 		idx := bytes.Index(data, []byte{0x1b, ']'})
@@ -58,16 +60,54 @@ func (p *oscParser) Filter(data []byte) ([]byte, []terminalNotification) {
 		content := data[2 : 2+end]
 		seqEnd := 2 + end + termLen
 
-		if note, ok := parseNotificationOSC(content); ok {
-			notes = append(notes, note)
-		} else {
+		keep, note, copied := classifyOSC(content)
+		if note != nil {
+			notes = append(notes, *note)
+		}
+
+		if copied {
+			clipboardCopied = true
+		}
+
+		if keep {
 			out = append(out, data[:seqEnd]...)
 		}
 
 		data = data[seqEnd:]
 	}
 
-	return out, notes
+	return oscResult{out: out, notes: notes, clipboardCopied: clipboardCopied}
+}
+
+// prependPending merges any buffered partial sequence with new data.
+func (p *oscParser) prependPending(data []byte) []byte {
+	if len(p.pending) == 0 {
+		return data
+	}
+
+	combined := make([]byte, 0, len(p.pending)+len(data))
+	combined = append(combined, p.pending...)
+	combined = append(combined, data...)
+
+	p.pending = nil
+
+	return combined
+}
+
+// classifyOSC inspects an OSC sequence's content and returns:
+//   - keep: whether the sequence should be forwarded to the terminal widget.
+//   - note: a terminal notification, or nil if the sequence is not a notification.
+//   - copied: whether the sequence is an OSC 52 clipboard write.
+func classifyOSC(content []byte) (bool, *terminalNotification, bool) {
+	if n, ok := parseNotificationOSC(content); ok {
+		return false, &n, false
+	}
+
+	if isClipboardOSC(content) {
+		return true, nil, true
+	}
+
+	return true, nil, false
 }
 
 func oscTerminator(data []byte) (int, int) {
@@ -108,4 +148,18 @@ func parseNotificationOSC(content []byte) (terminalNotification, bool) {
 	}
 
 	return terminalNotification{}, false
+}
+
+// isClipboardOSC reports whether content is an OSC 52 clipboard-write sequence.
+// Format: 52;c;<base64-data> or 52;<clipboard>;<base64-data>. A query (data
+// is "?") or clear (data is empty) does not count as a copy.
+func isClipboardOSC(content []byte) bool {
+	parts := bytes.SplitN(content, []byte(";"), 3)
+	if len(parts) < 3 || string(parts[0]) != "52" {
+		return false
+	}
+
+	data := parts[2]
+	// "?" is a clipboard query, empty is a clear — neither is a copy.
+	return len(data) > 0 && string(data) != "?"
 }

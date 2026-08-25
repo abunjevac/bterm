@@ -9,6 +9,7 @@ import (
 
 	"github.com/abunjevac/bterm/internal/config"
 	"github.com/abunjevac/bterm/internal/terminal"
+	"github.com/diamondburned/gotk4/pkg/core/glib"
 )
 
 const (
@@ -30,6 +31,17 @@ func (w *window) installTerminalNotifications(t terminal.Terminal) {
 
 	t.OnNotification(func(title, message string) {
 		w.handleTerminalNotification(terminalNotification{Title: title, Message: message})
+	})
+}
+
+// installClipboardDetection wires the OSC 52 clipboard-copy callback to show a toast.
+func (w *window) installClipboardDetection(t terminal.Terminal) {
+	t.OnClipboardCopy(func() {
+		glib.IdleAdd(func() bool {
+			w.toast.show("⧉ Copied")
+
+			return false
+		})
 	})
 }
 

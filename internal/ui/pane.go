@@ -99,6 +99,7 @@ func (pa *paneArea) spawnInTerm(t terminal.Terminal, workingDir string) {
 	t.SetScrollbar(cfg.ShowScrollbar)
 
 	pa.win.installTerminalNotifications(t)
+	pa.win.installClipboardDetection(t)
 
 	t.Spawn(workingDir, shell, shellArgs(cfg), func(_ int, _ error) {})
 }
