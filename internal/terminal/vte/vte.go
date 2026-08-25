@@ -1,4 +1,3 @@
-// Package vte implements terminal.Terminal via the VTE cgo bridge.
 package vte
 
 // #cgo pkg-config: vte-2.91-gtk4

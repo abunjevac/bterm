@@ -1,4 +1,3 @@
-// Package keymap maps keyboard bindings to terminal actions.
 package keymap
 
 // Action represents a named user action that can be bound to a key combination.
