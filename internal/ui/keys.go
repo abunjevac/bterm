@@ -7,6 +7,7 @@ import (
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
 	"github.com/abunjevac/bterm/internal/keymap"
+	"github.com/abunjevac/bterm/internal/terminal/kitty"
 )
 
 // f10Sequence is the xterm-compatible escape sequence VTE would normally
@@ -32,13 +33,24 @@ func (w *window) installKeys() {
 		binding := buildBinding(keyval, state)
 		act := w.keys.Lookup(binding)
 
-		if act == keymap.ActionUnknown {
-			return false
+		if act != keymap.ActionUnknown {
+			w.dispatch(act)
+
+			return true
 		}
 
-		w.dispatch(act)
+		// No keymap binding matched. If the focused terminal has the
+		// kitty keyboard protocol disambiguate mode active, encode the
+		// key as a CSI u sequence and send it directly to the shell.
+		if ft := w.focusedTerminal(); ft != nil && ft.KittyDisambiguate() {
+			if r := kitty.EncodeKey(keyval, state); r.Bytes() != nil {
+				ft.FeedChild(r.Bytes())
 
-		return true
+				return true
+			}
+		}
+
+		return false
 	})
 
 	w.win.AddController(ctl)

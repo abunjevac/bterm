@@ -38,6 +38,8 @@ type Terminal struct {
 	columns int
 	rows    int
 
+	kitty kittyParser
+
 	onTitle         func(string)
 	onNotification  func(title, message string)
 	onClipboardCopy func(text string)
@@ -268,6 +270,10 @@ func (t *Terminal) OnNotification(f func(title, message string)) { t.onNotificat
 // clipboard via OSC 52.
 func (t *Terminal) OnClipboardCopy(f func(text string)) { t.onClipboardCopy = f }
 
+// KittyDisambiguate reports whether the kitty keyboard protocol disambiguate
+// mode is active for this terminal.
+func (t *Terminal) KittyDisambiguate() bool { return t.kitty.Disambiguate() }
+
 // OnChildExited sets the callback invoked when the shell process exits.
 func (t *Terminal) OnChildExited(f func(int)) { t.onExit = f }
 
@@ -304,8 +310,16 @@ func (t *Terminal) copyBackendToFrontend() {
 				t.onClipboardCopy(result.clipboardText)
 			}
 
-			if len(result.out) > 0 {
-				_, _ = t.frontend.Write(result.out)
+			// Filter kitty keyboard protocol negotiation sequences
+			// before forwarding to VTE.
+			kittyResult := t.kitty.Filter(result.out)
+
+			if len(kittyResult.response) > 0 {
+				_ = t.writeBackend(kittyResult.response)
+			}
+
+			if len(kittyResult.out) > 0 {
+				_, _ = t.frontend.Write(kittyResult.out)
 			}
 		}
 

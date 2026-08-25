@@ -164,6 +164,15 @@ func (w *window) activeCWD() string {
 	return w.workingDir
 }
 
+// focusedTerminal returns the focused terminal of the active tab, or nil.
+func (w *window) focusedTerminal() terminal.Terminal {
+	if len(w.tabs) == 0 {
+		return nil
+	}
+
+	return w.tabs[w.active].area.focusedTerminal()
+}
+
 func shellArgs(cfg *config.Config) []string {
 	if len(cfg.ShellArgs) > 0 {
 		return cfg.ShellArgs

@@ -143,6 +143,12 @@ bterm also detects `OSC 52` clipboard writes and shows a "Copied" toast:
 printf '\033]52;c;SGVsbG8=\a'
 ```
 
+### Kitty keyboard protocol
+
+bterm implements the kitty keyboard protocol disambiguate mode, which allows terminal applications like Neovim to distinguish key combinations that legacy encoding cannot (e.g. `Ctrl+Shift+A` vs `Ctrl+A`, `Ctrl+Enter` vs `Enter`). The protocol is negotiated at runtime by the application — no configuration needed.
+
+To disable the kitty keyboard protocol, set `kittyEnabled` to `false` in `internal/terminal/vte/kitty.go` and rebuild. This is a compile-time constant, so there is no runtime cost when disabled.
+
 ---
 
 ## Keyboard shortcuts
