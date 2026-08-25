@@ -250,10 +250,8 @@ func (pa *paneArea) installFontScroll(id int, widget gtk.Widgetter) {
 
 		if dy < 0 {
 			pa.win.fontSize++
-		} else {
-			if pa.win.fontSize > 4 {
-				pa.win.fontSize--
-			}
+		} else if pa.win.fontSize > 4 {
+			pa.win.fontSize--
 		}
 
 		t.SetFont(pa.win.fontFamily, pa.win.fontSize)

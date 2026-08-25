@@ -12,6 +12,14 @@ import (
 	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 )
 
+// bracketedNewline is a literal LF wrapped in bracketed-paste markers
+// (xterm mode 2004: ESC[200~ ... ESC[201~). Apps that enable bracketed paste
+// treat everything between the markers as a single atomic block of literal
+// text rather than keystrokes, so the embedded LF is inserted rather than
+// submitting the line — unlike a bare LF, which some apps (e.g. Codebuff)
+// treat the same as a plain Enter outside of a paste block.
+var bracketedNewline = []byte("\x1b[200~\n\x1b[201~") //nolint:gochecknoglobals
+
 type clearTerminal interface {
 	Clear()
 }
@@ -156,7 +164,7 @@ func (w *window) applyFontAction(a keymap.Action) {
 }
 
 // dispatchPane routes pane-level actions to the appropriate paneArea method.
-func (w *window) dispatchPane(pa *paneArea, a keymap.Action) {
+func (w *window) dispatchPane(pa *paneArea, a keymap.Action) { //nolint:cyclop
 	switch a {
 	case keymap.ActionSplitLeftRight:
 		pa.split(panetree.LeftRight)
@@ -278,14 +286,6 @@ func (pa *paneArea) resetFocused() {
 		t.Reset()
 	}
 }
-
-// bracketedNewline is a literal LF wrapped in bracketed-paste markers
-// (xterm mode 2004: ESC[200~ ... ESC[201~). Apps that enable bracketed paste
-// treat everything between the markers as a single atomic block of literal
-// text rather than keystrokes, so the embedded LF is inserted rather than
-// submitting the line — unlike a bare LF, which some apps (e.g. Codebuff)
-// treat the same as a plain Enter outside of a paste block.
-var bracketedNewline = []byte("\x1b[200~\n\x1b[201~")
 
 // sendNewlineToFocused feeds a bracketed-paste-wrapped newline to the focused
 // terminal's child. Bound to Ctrl+Enter, a fallback for apps (e.g. Codebuff)
