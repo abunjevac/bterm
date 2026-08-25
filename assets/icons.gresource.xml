@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/io/github/abunjevac/bterm/icons/scalable/actions">
+    <file alias="bterm-split-left-right-symbolic.svg">split-left-right.svg</file>
+    <file alias="bterm-split-top-bottom-symbolic.svg">split-top-bottom.svg</file>
+  </gresource>
+</gresources>

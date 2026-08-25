@@ -1,6 +1,17 @@
 version: "3"
 
 tasks:
+  generate-icons:
+    desc: Generate embedded GTK icon resources
+    sources:
+      - assets/icons.gresource.xml
+      - assets/split-left-right.svg
+      - assets/split-top-bottom.svg
+    generates:
+      - assets/icons.gresource
+    cmds:
+      - go generate ./assets
+
   build:
     desc: Build bterm binary
     vars:

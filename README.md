@@ -60,6 +60,13 @@ task build          # requires Task — https://taskfile.dev
 # or: go build -o bterm ./cmd/bterm
 ```
 
+The generated GTK icon resource is committed. After changing an icon SVG or `assets/icons.gresource.xml`, install
+`glib-compile-resources` (`libglib2.0-bin` on Ubuntu/Debian) and regenerate it explicitly:
+
+```bash
+task generate-icons
+```
+
 ### Desktop launcher and icon
 
 Linux desktop shells resolve application icons through desktop integration metadata, not directly from a running GTK4

@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
 	"github.com/abunjevac/bterm/internal/keymap"
@@ -19,6 +20,8 @@ func (w *window) buildTabBar() {
 
 	header.SetShowTitleButtons(true)
 
+	gtk.IconThemeGetForDisplay(gdk.DisplayGetDefault()).AddResourcePath("/io/github/abunjevac/bterm/icons")
+
 	settingsBtn := gtk.NewButton()
 
 	settingsBtn.SetIconName("preferences-system-symbolic")
@@ -30,7 +33,7 @@ func (w *window) buildTabBar() {
 
 	splitLeftRightBtn := gtk.NewButton()
 
-	splitLeftRightBtn.SetIconName("view-split-left-right-symbolic")
+	splitLeftRightBtn.SetIconName("bterm-split-left-right-symbolic")
 	splitLeftRightBtn.SetTooltipText(headerActionTooltip(w.keys, keymap.ActionSplitLeftRight, "Split left/right"))
 	splitLeftRightBtn.AddCSSClass("flat")
 	splitLeftRightBtn.ConnectClicked(func() { w.dispatch(keymap.ActionSplitLeftRight) })
@@ -39,7 +42,7 @@ func (w *window) buildTabBar() {
 
 	splitTopBottomBtn := gtk.NewButton()
 
-	splitTopBottomBtn.SetIconName("view-split-top-bottom-symbolic")
+	splitTopBottomBtn.SetIconName("bterm-split-top-bottom-symbolic")
 	splitTopBottomBtn.SetTooltipText(headerActionTooltip(w.keys, keymap.ActionSplitTopBottom, "Split top/bottom"))
 	splitTopBottomBtn.AddCSSClass("flat")
 	splitTopBottomBtn.ConnectClicked(func() { w.dispatch(keymap.ActionSplitTopBottom) })

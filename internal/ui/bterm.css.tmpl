@@ -1,4 +1,5 @@
-window { background-color: {{.Background}};{{if .UIFont}} font-family: {{.UIFont}};{{end}}{{if .UIFontSize}} font-size: {{.UIFontSize}}pt;{{end}} }
+window.bterm-main { background-color: {{.Background}}; }
+window { {{if .UIFont}} font-family: {{.UIFont}};{{end}}{{if .UIFontSize}} font-size: {{.UIFontSize}}pt;{{end}} }
 .bterm-tab-active { box-shadow: inset 0 0 0 1px {{.Accent}}; }
 .bterm-tab-num { background-color: {{.Accent}}; color: {{.Background}}; border-radius: 5px; padding: 0 5px; font-weight: 700; }
 .bterm-toast { background-color: {{.Accent}}; color: {{.Background}}; border-radius: 9px; padding: 7px 12px; }

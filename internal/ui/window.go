@@ -68,6 +68,7 @@ func newEmptyWindow(app *gtk.Application, bundle *config.Bundle, workingDir stri
 
 	w.win.SetTitle(cfg.Title)
 	w.win.SetIconName("io.github.abunjevac.bterm")
+	w.win.AddCSSClass("bterm-main")
 
 	applyStyle(w.palette, w.uiFontFamily, w.uiFontSize)
 
