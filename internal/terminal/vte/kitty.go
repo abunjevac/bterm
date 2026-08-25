@@ -32,10 +32,8 @@ type kittyParser struct {
 
 // kittyResult holds the output of filtering kitty negotiation sequences.
 type kittyResult struct {
-	// out is the data to forward to the terminal widget.
-	out []byte
-	// response is a reply to send back to the shell, or nil.
-	response []byte
+	out      []byte // data to forward to the terminal widget
+	response []byte // reply to send back to the shell, or nil
 }
 
 // Filter removes kitty keyboard protocol negotiation sequences from data.
@@ -60,20 +58,20 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 			break
 		}
 
-		// Not enough data to read the prefix byte.
+		// not enough data to read the prefix byte
 		if idx+2 >= len(data) {
 			p.pending = append(p.pending, data...)
 
 			break
 		}
 
-		// Scan forward from after ESC [ to find the CSI final byte.
+		// scan forward from after ESC [ to find the CSI final byte
 		// CSI final bytes are in the range 0x40-0x7e.
 		finalOff := findCSIFinal(data, idx+2)
 
 		if finalOff < 0 {
 			if len(data[idx:]) > maxPendingKitty {
-				// Too long — not a valid CSI, pass ESC [ through.
+				// too long — not a valid CSI, pass ESC [ through
 				out = append(out, data[idx], data[idx+1])
 				data = data[idx+2:]
 
@@ -86,8 +84,8 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 			break
 		}
 
-		// Check if this is a kitty keyboard protocol sequence.
-		// Kitty sequences have a private-marker prefix (=, ?, >, <) and
+		// check if this is a kitty keyboard protocol sequence.
+		// kitty sequences have a private-marker prefix (=, ?, >, <) and
 		// final byte 'u'. Everything else passes through to VTE.
 		prefix := data[idx+2]
 
@@ -140,7 +138,7 @@ func (p *kittyParser) handleKittyCSI(prefix byte, content []byte) string {
 
 	switch prefix {
 	case '=':
-		// CSI = flags ; mode u — set flags.
+		// CSI = flags ; mode u — set flags
 		return p.handleSetFlags(s)
 	case '?':
 		// CSI ? u with empty content is a query. CSI ? <flags> u is a
@@ -152,10 +150,10 @@ func (p *kittyParser) handleKittyCSI(prefix byte, content []byte) string {
 
 		return ""
 	case '>':
-		// CSI > flags u — push flags.
+		// CSI > flags u — push flags
 		return p.handlePushFlags(s)
 	case '<':
-		// CSI < count u — pop flags.
+		// CSI < count u — pop flags
 		return p.handlePopFlags(s)
 	default:
 		return ""

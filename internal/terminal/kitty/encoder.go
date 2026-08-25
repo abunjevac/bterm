@@ -9,9 +9,7 @@ import (
 
 // EncodeResult holds the encoded key event.
 type EncodeResult struct {
-	// bytes is the CSI sequence to send to the shell, or nil if the key
-	// should be handled by the terminal widget (legacy encoding).
-	bytes []byte
+	bytes []byte // CSI sequence to send to the shell, or nil if the key should be handled by the terminal widget (legacy encoding)
 }
 
 // Bytes returns the encoded bytes, or nil if the key should fall through
@@ -20,10 +18,8 @@ func (e EncodeResult) Bytes() []byte { return e.bytes }
 
 // keyEncoding describes how to encode a functional key.
 type keyEncoding struct {
-	// number is the CSI parameter number.
-	number int
-	// final is the CSI final byte: 'u', '~', or a letter (A,B,C,D,H,F,P,Q,S).
-	final byte
+	number int  // CSI parameter number
+	final  byte // CSI final byte: 'u', '~', or a letter (A,B,C,D,H,F,P,Q,S)
 }
 
 // EncodeKey encodes a key press as a kitty keyboard protocol sequence.
@@ -46,7 +42,7 @@ type keyEncoding struct {
 //   - keyval: GDK keyval of the pressed key
 //   - state: GDK modifier state
 func EncodeKey(keyval uint, state gdk.ModifierType) EncodeResult {
-	// Never encode modifier-only key presses.
+	// never encode modifier-only key presses
 	if isModifierKey(keyval) {
 		return EncodeResult{}
 	}
@@ -54,10 +50,10 @@ func EncodeKey(keyval uint, state gdk.ModifierType) EncodeResult {
 	mods := encodeModifiers(state)
 	hasCtrlAlt := state&(gdk.ControlMask|gdk.AltMask) != 0
 
-	// Check if it's a functional key with a known encoding.
+	// check if it's a functional key with a known encoding
 	if enc, ok := functionalKeys[keyval]; ok {
-		// Plain functional keys without modifiers fall through to VTE,
-		// except Esc and F13+ which always need encoding.
+		// plain functional keys without modifiers fall through to VTE,
+		// except Esc and F13+ which always need encoding
 		if mods == 1 && !alwaysEncode(keyval) {
 			return EncodeResult{}
 		}
@@ -65,7 +61,7 @@ func EncodeKey(keyval uint, state gdk.ModifierType) EncodeResult {
 		return EncodeResult{bytes: encodeSequence(enc, mods)}
 	}
 
-	// Text keys: encode only when ctrl or alt is pressed.
+	// text keys: encode only when ctrl or alt is pressed
 	if !hasCtrlAlt {
 		return EncodeResult{}
 	}
@@ -73,7 +69,7 @@ func EncodeKey(keyval uint, state gdk.ModifierType) EncodeResult {
 	code := int(gdk.KeyvalToLower(keyval))
 
 	if code < 0x20 || code == 0x7f {
-		// Control codes (including space=32 which is fine, and
+		// control codes (including space=32 which is fine, and
 		// Backspace=127 handled above). Don't encode.
 		if keyval == gdk.KEY_space {
 			code = 32
@@ -117,7 +113,7 @@ func encodeSequence(enc keyEncoding, mods int) []byte {
 
 		seq.WriteByte('~')
 	default:
-		// Letter form: A, B, C, D, H, F, P, Q, S
+		// letter form: A, B, C, D, H, F, P, Q, S
 		if mods > 1 {
 			seq.WriteByte('1')
 			seq.WriteByte(';')
@@ -191,7 +187,7 @@ func alwaysEncode(keyval uint) bool {
 	}
 
 	if enc, ok := functionalKeys[keyval]; ok {
-		// PUA-encoded keys (F13+, keypad, media, etc.) always need encoding.
+		// PUA-encoded keys (F13+, keypad, media, etc.) always need encoding
 		return enc.final == 'u' && enc.number >= 57344
 	}
 

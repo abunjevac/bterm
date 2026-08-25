@@ -16,11 +16,8 @@ var DefaultKeymapTOML string
 
 // Layout holds the resolved binding → action mapping.
 type Layout struct {
-	// bindings maps normalized binding string → Action
-	bindings map[string]Action
-
-	// conflicts stores bindings that were claimed by more than one action
-	conflicts []string
+	bindings  map[string]Action // normalized binding string → Action
+	conflicts []string          // bindings claimed by more than one action
 }
 
 // Lookup returns the Action for the given normalized binding string,

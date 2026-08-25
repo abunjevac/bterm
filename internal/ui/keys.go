@@ -24,7 +24,7 @@ func (w *window) installKeys() {
 			// xkeyboard-config reports plain F10 with a phantom Shift
 			// modifier, which GTK reads as "activate the header bar" and
 			// highlights it instead of forwarding the key. Reclaim F10 for
-			// the terminal so apps like Midnight Commander can use it.
+			// the terminal so apps like Midnight Commander can use it
 			w.feedFocusedTerminal(f10Sequence)
 
 			return true
@@ -39,9 +39,9 @@ func (w *window) installKeys() {
 			return true
 		}
 
-		// No keymap binding matched. If the focused terminal has the
+		// no keymap binding matched. If the focused terminal has the
 		// kitty keyboard protocol disambiguate mode active, encode the
-		// key as a CSI u sequence and send it directly to the shell.
+		// key as a CSI u sequence and send it directly to the shell
 		if ft := w.focusedTerminal(); ft != nil && ft.KittyDisambiguate() {
 			if r := kitty.EncodeKey(keyval, state); r.Bytes() != nil {
 				ft.FeedChild(r.Bytes())

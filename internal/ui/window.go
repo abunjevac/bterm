@@ -201,7 +201,7 @@ func (w *window) reownClipboard() {
 		return
 	}
 
-	// ReadTextAsync must be called from the GTK main thread.
+	// ReadTextAsync must be called from the GTK main thread
 	glib.IdleAdd(func() bool {
 		clip.ReadTextAsync(context.Background(), func(res gio.AsyncResulter) {
 			text, err := clip.ReadTextFinish(res)
@@ -209,8 +209,8 @@ func (w *window) reownClipboard() {
 				return
 			}
 
-			// Re-set the text so the application owns the clipboard content,
-			// independent of the VTE widget's lifetime.
+			// re-set the text so the application owns the clipboard content,
+			// independent of the VTE widget's lifetime
 			clip.SetText(text)
 		})
 

@@ -238,7 +238,7 @@ func (t *Terminal) FeedChild(data []byte) {
 	}
 
 	// vte_terminal_feed_child copies the buffer synchronously, so passing a
-	// pointer into Go memory is safe — C does not retain it after the call.
+	// pointer into Go memory is safe — C does not retain it after the call
 	C.vteFeedChild(t.ptr, (*C.char)(unsafe.Pointer(&data[0])), C.int(len(data)))
 }
 
@@ -317,8 +317,8 @@ func (t *Terminal) copyBackendToFrontend() {
 				t.onClipboardCopy(result.clipboardText)
 			}
 
-			// Filter kitty keyboard protocol negotiation sequences
-			// before forwarding to VTE.
+			// filter kitty keyboard protocol negotiation sequences
+			// before forwarding to VTE
 			kittyResult := t.kitty.Filter(result.out)
 
 			if len(kittyResult.response) > 0 {

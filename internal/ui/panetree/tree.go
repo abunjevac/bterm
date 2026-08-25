@@ -104,7 +104,7 @@ func (t *Tree) Close(id int) {
 
 	// promote sibling into parent's slot; restore grandparent link because
 	// *p = *sib would otherwise copy sib.parent (== p) into p.parent,
-	// creating a self-loop that causes Neighbor to spin forever.
+	// creating a self-loop that causes Neighbor to spin forever
 	*p = *sib
 
 	p.parent = grandparent

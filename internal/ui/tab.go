@@ -52,7 +52,7 @@ func (t *tab) buildLabel(w *window, idx int) {
 	innerBox.Append(t.numLabel)
 	innerBox.Append(t.titleLabel)
 
-	// selectBtn selects this tab when clicked.
+	// selectBtn selects this tab when clicked
 	selectBtn := gtk.NewButton()
 
 	selectBtn.SetChild(innerBox)
@@ -66,7 +66,7 @@ func (t *tab) buildLabel(w *window, idx int) {
 
 	installTabDetachDrag(selectBtn, w, t)
 
-	// closeBtn is a sibling of selectBtn, not nested inside it.
+	// closeBtn is a sibling of selectBtn, not nested inside it
 	closeBtn := gtk.NewButton()
 
 	closeBtn.SetIconName("window-close-symbolic")
@@ -89,7 +89,7 @@ func installTabDetachDrag(selectBtn *gtk.Button, w *window, t *tab) {
 
 	// consumedX tracks how much of the gesture's cumulative offset has
 	// already been applied as tab swaps, since GestureDrag reports offsets
-	// relative to the drag start point rather than as per-update deltas.
+	// relative to the drag start point rather than as per-update deltas
 	var consumedX float64
 
 	drag.SetButton(1)

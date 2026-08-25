@@ -26,7 +26,7 @@ type paneArea struct {
 	// splitHintNewID / splitHintPos carry a one-shot hint from split() to
 	// buildFromDesc: set this pixel position on the GtkPaned that contains the
 	// newly-created terminal (identified by its ID) so the new pane starts at
-	// half the current terminal's size instead of GTK's default position=0.
+	// half the current terminal's size instead of GTK's default position=0
 	splitHintNewID int
 	splitHintPos   int
 }
@@ -117,7 +117,7 @@ func (pa *paneArea) split(o panetree.Orientation) {
 		cwd, _ = os.UserHomeDir()
 	}
 
-	// Capture the focused terminal's current size before rebuild clears it.
+	// capture the focused terminal's current size before rebuild clears it
 	// The new GtkPaned will be positioned at half this value.
 	var splitPos int
 
@@ -268,9 +268,9 @@ func (pa *paneArea) installFontScroll(id int, widget gtk.Widgetter) {
 // rebuild replaces the child of pa.root with a freshly-built widget tree
 // that mirrors the current panetree state.
 func (pa *paneArea) rebuild() {
-	// Unparent all terminal widgets first so they can be re-parented into
+	// unparent all terminal widgets first so they can be re-parented into
 	// the new GtkPaned tree. Without this, GTK rejects SetStartChild/SetEndChild
-	// on widgets that still have a parent from the previous layout.
+	// on widgets that still have a parent from the previous layout
 	for _, w := range pa.widgets {
 		gtk.BaseWidget(w).Unparent()
 	}
@@ -337,7 +337,7 @@ func (pa *paneArea) buildFromDesc(d *panetree.NodeDesc) gtk.Widgetter {
 		paned.SetEndChild(b)
 	}
 
-	// If this is the GtkPaned created by the most recent split, position it at
+	// if this is the GtkPaned created by the most recent split, position it at
 	// half the focused terminal's pre-split size so both halves start equal.
 	// The new terminal's ID uniquely identifies this paned in the tree.
 	if pa.splitHintNewID != 0 && pa.splitHintPos > 0 && (pa.isHintLeaf(d.A) || pa.isHintLeaf(d.B)) {

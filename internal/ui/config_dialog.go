@@ -111,7 +111,7 @@ func (f *configForm) updateSpinners() {
 func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	var f configForm
 
-	// Typography
+	// typography
 	fontDlg := gtk.NewFontDialog()
 
 	f.fontBtn = gtk.NewFontDialogButton(fontDlg)
@@ -154,7 +154,7 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 
 	cfgAttach(typographyGrid, 1, "UI font", f.uiFontBtn)
 
-	// Appearance
+	// appearance
 	f.themes = theme.BuiltinNames()
 	f.themeDD = gtk.NewDropDownFromStrings(f.themes)
 
@@ -165,7 +165,7 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 
 	cfgAttach(appearanceGrid, 0, "Theme", f.themeDD)
 
-	// Shell
+	// shell
 	f.shellEntry = cfgEntry(cfg.Shell, "auto-detect from $SHELL")
 	f.shellArgsEntry = cfgEntry(strings.Join(cfg.ShellArgs, " "), "-l")
 
@@ -174,7 +174,7 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	cfgAttach(shellGrid, 0, "Shell", f.shellEntry)
 	cfgAttach(shellGrid, 1, "Args", f.shellArgsEntry)
 
-	// Terminal
+	// terminal
 	f.scrollbackSpin = cfgSpin(100, 200000, 100, float64(cfg.Scrollback))
 	f.scrollbarSwitch = gtk.NewSwitch()
 
@@ -197,7 +197,7 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	cfgAttach(terminalGrid, 1, "Show scrollbar", f.scrollbarSwitch)
 	cfgAttach(terminalGrid, 2, "Terminal notifications", f.terminalNotificationsDD)
 
-	// Window
+	// window
 	f.widthSpin = cfgSpin(40, 500, 1, float64(cfg.WindowColumns))
 	f.heightSpin = cfgSpin(10, 200, 1, float64(cfg.WindowRows))
 	f.titleEntry = cfgEntry(cfg.Title, "bterm")
@@ -208,7 +208,7 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	cfgAttach(windowGrid, 1, "Rows", f.heightSpin)
 	cfgAttach(windowGrid, 2, "Title", f.titleEntry)
 
-	// Applications
+	// applications
 	f.editorEntry = cfgEntry(cfg.Editor, "zed")
 	f.editorArgsEntry = cfgEntry(strings.Join(cfg.EditorArgs, " "), "{cwd}")
 	f.fileBrowserEntry = cfgEntry(cfg.FileBrowser, "dolphin")
@@ -221,7 +221,7 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	cfgAttach(applicationsGrid, 2, "File browser", f.fileBrowserEntry)
 	cfgAttach(applicationsGrid, 3, "File browser args", f.fileBrowserArgsEntry)
 
-	// Assemble
+	// assemble
 	box := gtk.NewBox(gtk.OrientationVertical, 0)
 
 	sections := []struct {

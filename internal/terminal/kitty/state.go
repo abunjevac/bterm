@@ -38,7 +38,7 @@ func (s *State) Set(flags, mode int) {
 // If newFlags is omitted (zero), the flags are cleared.
 func (s *State) Push(newFlags int) {
 	if len(s.stack) >= maxStackDepth {
-		// Evict oldest entry to prevent unbounded growth.
+		// evict oldest entry to prevent unbounded growth
 		s.stack = s.stack[1:]
 	}
 

@@ -18,12 +18,9 @@ const maxPendingOSC = 64 * 1024
 
 // oscResult holds the output of filtering a chunk of terminal data.
 type oscResult struct {
-	// out is the data to forward to the terminal widget.
-	out []byte
-	// notes are terminal notifications extracted from OSC sequences.
-	notes []terminalNotification
-	// clipboardText holds decoded text from an OSC 52 clipboard-write, or "".
-	clipboardText string
+	out           []byte                 // data to forward to the terminal widget
+	notes         []terminalNotification // terminal notifications extracted from OSC sequences
+	clipboardText string                 // decoded text from an OSC 52 clipboard-write, or ""
 }
 
 func (p *oscParser) Filter(data []byte) oscResult {
@@ -110,7 +107,7 @@ func classifyOSC(content []byte) (bool, *terminalNotification, string) {
 	}
 
 	if text, ok := parseClipboardOSC(content); ok {
-		// VTE does not implement OSC 52 — strip it and handle the clipboard ourselves.
+		// VTE does not implement OSC 52 — strip it and handle the clipboard ourselves
 		return false, nil, text
 	}
 
@@ -168,7 +165,7 @@ func parseClipboardOSC(content []byte) (string, bool) {
 	}
 
 	data := parts[2]
-	// "?" is a clipboard query, empty is a clear — neither is a copy.
+	// "?" is a clipboard query, empty is a clear — neither is a copy
 	if len(data) == 0 || string(data) == "?" {
 		return "", false
 	}

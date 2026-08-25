@@ -257,9 +257,9 @@ func (pa *paneArea) pasteToFocused() bool {
 		return false
 	}
 
-	// Check if the clipboard currently offers any text format before pasting.
+	// check if the clipboard currently offers any text format before pasting.
 	// Different applications report text with different MIME types
-	// (text/plain, text/plain;charset=utf-8, UTF8_STRING, etc.).
+	// (text/plain, text/plain;charset=utf-8, UTF8_STRING, etc.)
 	if !clipboardHasText(clip) {
 		return false
 	}
