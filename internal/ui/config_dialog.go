@@ -123,6 +123,7 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 
 	initFontDesc.SetFamily(cfg.Font)
 	initFontDesc.SetSize(int(cfg.FontSize * pango.SCALE))
+
 	f.fontBtn.SetFontDesc(initFontDesc)
 
 	typographyGrid := cfgGrid()

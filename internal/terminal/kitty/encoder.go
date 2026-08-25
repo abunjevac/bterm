@@ -71,6 +71,7 @@ func EncodeKey(keyval uint, state gdk.ModifierType) EncodeResult {
 	}
 
 	code := int(gdk.KeyvalToLower(keyval))
+
 	if code < 0x20 || code == 0x7f {
 		// Control codes (including space=32 which is fine, and
 		// Backspace=127 handled above). Don't encode.

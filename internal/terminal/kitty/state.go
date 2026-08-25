@@ -62,6 +62,7 @@ func (s *State) Pop(count int) {
 	}
 
 	idx := len(s.stack) - count
+
 	s.flags = s.stack[idx]
 	s.stack = s.stack[:idx]
 }

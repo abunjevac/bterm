@@ -106,6 +106,7 @@ func (t *Tree) Close(id int) {
 	// *p = *sib would otherwise copy sib.parent (== p) into p.parent,
 	// creating a self-loop that causes Neighbor to spin forever.
 	*p = *sib
+
 	p.parent = grandparent
 
 	if p.a != nil {

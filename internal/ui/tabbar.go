@@ -98,6 +98,7 @@ func (w *window) attachTab(t *tab) {
 
 func (w *window) bindTab(t *tab) {
 	t.area.win = w
+
 	t.area.onEmpty = func() { w.closeTab(t) }
 
 	t.buildLabel(w, len(w.tabs)+1)
@@ -117,6 +118,7 @@ func (w *window) bindTab(t *tab) {
 
 func (w *window) detachTab(t *tab) {
 	idx := w.tabIndex(t)
+
 	if idx < 0 || len(w.tabs) < 2 {
 		return
 	}
@@ -140,6 +142,7 @@ func (w *window) detachTab(t *tab) {
 	newWin.attachTab(t)
 	newWin.renumber()
 	newWin.selectTab(0)
+
 	newWin.win.Present()
 }
 
@@ -182,6 +185,7 @@ func (w *window) selectTab(i int) {
 	}
 
 	w.active = i
+
 	t := w.tabs[i]
 
 	t.label.AddCSSClass("bterm-tab-active")
@@ -200,6 +204,7 @@ func (w *window) selectTab(i int) {
 // closeTab removes t from the tab list. Closes the window when it was the last tab.
 func (w *window) closeTab(t *tab) {
 	idx := w.tabIndex(t)
+
 	if idx < 0 {
 		return
 	}
@@ -231,6 +236,7 @@ func (w *window) swapAdjacentTabs(i int) {
 	j := i + 1
 
 	w.tabs[i], w.tabs[j] = w.tabs[j], w.tabs[i]
+
 	w.tabBox.ReorderChildAfter(w.tabs[j].label, w.tabs[i].label)
 
 	switch w.active {

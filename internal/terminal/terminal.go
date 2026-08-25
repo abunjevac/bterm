@@ -1,8 +1,9 @@
 package terminal
 
 import (
-	"github.com/abunjevac/bterm/internal/theme"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
+
+	"github.com/abunjevac/bterm/internal/theme"
 )
 
 // SpawnCallback reports the result of starting a shell.

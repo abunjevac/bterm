@@ -50,6 +50,7 @@ func newPaneArea(w *window, firstTerm terminal.Terminal) *paneArea {
 
 	pa.root.SetVExpand(true)
 	pa.root.SetHExpand(true)
+
 	pa.rebuild()
 
 	return pa
@@ -140,6 +141,7 @@ func (pa *paneArea) split(o panetree.Orientation) {
 	pa.splitHintPos = splitPos
 
 	pa.tree.Split(o, id)
+
 	pa.rebuild()
 	pa.grabFocus()
 }
@@ -177,6 +179,7 @@ func (pa *paneArea) focusDir(d panetree.Direction) {
 	}
 
 	pa.tree.SetFocus(neighbor)
+
 	pa.grabFocus()
 }
 

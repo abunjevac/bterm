@@ -23,6 +23,7 @@ func (pa *paneArea) installTerminalContextMenu(id int, widget gtk.Widgetter) {
 	gesture.SetButton(3)
 	gesture.ConnectPressed(func(_ int, x, y float64) {
 		pa.tree.SetFocus(id)
+
 		pa.grabFocus()
 		pa.showContextMenu(id, widget, x, y)
 	})
@@ -120,6 +121,7 @@ func contextAction(w *window, root *gtk.Popover, label string, action keymap.Act
 	gesture.SetButton(0)
 	gesture.ConnectReleased(func(_ int, _, _ float64) {
 		root.Popdown()
+
 		w.dispatch(action)
 	})
 
@@ -158,6 +160,7 @@ func installSubmenuOpenControllers(row *gtk.Box, submenu *gtk.Popover, openSubme
 	motion.ConnectEnter(func(_, _ float64) {
 		openContextSubmenu(submenu, openSubmenu)
 	})
+
 	row.AddController(motion)
 
 	gesture := gtk.NewGestureClick()
@@ -166,6 +169,7 @@ func installSubmenuOpenControllers(row *gtk.Box, submenu *gtk.Popover, openSubme
 	gesture.ConnectReleased(func(_ int, _, _ float64) {
 		openContextSubmenu(submenu, openSubmenu)
 	})
+
 	row.AddController(gesture)
 }
 
@@ -190,6 +194,7 @@ func contextSubmenuAction(w *window, root, submenu *gtk.Popover, entry contextMe
 	gesture.ConnectReleased(func(_ int, _, _ float64) {
 		submenu.Popdown()
 		root.Popdown()
+
 		w.dispatch(entry.action)
 	})
 
@@ -207,14 +212,17 @@ func contextRow(label, shortcut string, submenu bool) *gtk.Box {
 	row.SetMarginBottom(2)
 	row.SetMarginStart(8)
 	row.SetMarginEnd(8)
+
 	name.SetXAlign(0)
 	name.SetHExpand(true)
+
 	row.Append(name)
 
 	if shortcut != "" {
 		shortcutLabel := gtk.NewLabel(shortcut)
 
 		shortcutLabel.AddCSSClass("bterm-menu-shortcut")
+
 		row.Append(shortcutLabel)
 	}
 

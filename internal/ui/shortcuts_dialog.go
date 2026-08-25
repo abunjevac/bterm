@@ -121,6 +121,7 @@ func shortcutCard(title string, entries []keymap.LayoutEntry) *gtk.Box {
 
 	heading.SetHAlign(gtk.AlignStart)
 	heading.AddCSSClass("bterm-shortcut-card-title")
+
 	card.Append(heading)
 
 	for _, entry := range entries {
@@ -142,11 +143,13 @@ func shortcutCard(title string, entries []keymap.LayoutEntry) *gtk.Box {
 			keyLabel := gtk.NewLabel(key)
 
 			keyLabel.AddCSSClass("bterm-shortcut-key")
+
 			keys.Append(keyLabel)
 		}
 
 		row.Append(nameLabel)
 		row.Append(keys)
+
 		card.Append(row)
 	}
 

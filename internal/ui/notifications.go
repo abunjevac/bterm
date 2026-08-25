@@ -7,9 +7,10 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/diamondburned/gotk4/pkg/core/glib"
+
 	"github.com/abunjevac/bterm/internal/config"
 	"github.com/abunjevac/bterm/internal/terminal"
-	"github.com/diamondburned/gotk4/pkg/core/glib"
 )
 
 const (

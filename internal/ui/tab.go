@@ -103,6 +103,7 @@ func installTabDetachDrag(selectBtn *gtk.Button, w *window, t *tab) {
 		setDragSurfaceCursor(selectBtn, "move")
 
 		selectBtn.AddCSSClass("bterm-tab-dragging")
+
 		t.label.AddCSSClass("bterm-tab-dragging")
 	})
 	drag.ConnectDragUpdate(func(offsetX, _ float64) {
@@ -112,8 +113,10 @@ func installTabDetachDrag(selectBtn *gtk.Button, w *window, t *tab) {
 	})
 	drag.ConnectDragEnd(func(_, offsetY float64) {
 		setDragSurfaceCursor(selectBtn, "")
+
 		selectBtn.SetCursorFromName("grab")
 		selectBtn.RemoveCSSClass("bterm-tab-dragging")
+
 		t.label.RemoveCSSClass("bterm-tab-dragging")
 
 		if offsetY > -tabDetachDragThreshold && offsetY < tabDetachDragThreshold {
@@ -122,6 +125,7 @@ func installTabDetachDrag(selectBtn *gtk.Button, w *window, t *tab) {
 
 		w.detachTab(t)
 	})
+
 	selectBtn.AddController(drag)
 }
 

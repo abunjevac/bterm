@@ -7,9 +7,10 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/diamondburned/gotk4/pkg/gdk/v4"
+
 	"github.com/abunjevac/bterm/internal/keymap"
 	"github.com/abunjevac/bterm/internal/ui/panetree"
-	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 )
 
 // bracketedNewline is a literal LF wrapped in bracketed-paste markers
@@ -89,6 +90,7 @@ func (w *window) openConfiguredApplication(action keymap.Action) {
 // openApplication starts a configured application with the active terminal directory.
 func (w *window) openApplication(message, command string, args []string) {
 	command = strings.TrimSpace(command)
+
 	if command == "" {
 		w.toast.show("Application command is not configured")
 
@@ -96,6 +98,7 @@ func (w *window) openApplication(message, command string, args []string) {
 	}
 
 	cwd := w.activeCWD()
+
 	if cwd == "" {
 		w.toast.show("Current directory is unavailable")
 
@@ -175,6 +178,7 @@ func (w *window) dispatchPane(pa *paneArea, a keymap.Action) { //nolint:cyclop
 	case keymap.ActionCopy:
 		if pa.copyFromFocused() {
 			w.reownClipboard()
+
 			w.toast.show("⧉ Copied")
 		}
 	case keymap.ActionPaste:
@@ -223,6 +227,7 @@ func (pa *paneArea) dispatchDir(a keymap.Action) {
 // Returns false when there is no selection to copy.
 func (pa *paneArea) copyFromFocused() bool {
 	t := pa.focusedTerminal()
+
 	if t == nil {
 		return false
 	}
@@ -241,11 +246,13 @@ func (pa *paneArea) copyFromFocused() bool {
 // Returns false when the clipboard has no text content to paste.
 func (pa *paneArea) pasteToFocused() bool {
 	t := pa.focusedTerminal()
+
 	if t == nil {
 		return false
 	}
 
 	clip := pa.win.clipboard()
+
 	if clip == nil {
 		return false
 	}

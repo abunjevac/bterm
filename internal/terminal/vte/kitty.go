@@ -99,9 +99,10 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 		}
 
 		out = append(out, data[:idx]...)
-		content := data[idx+3 : finalOff]
-		response = append(response, p.handleKittyCSI(prefix, content)...)
 
+		content := data[idx+3 : finalOff]
+
+		response = append(response, p.handleKittyCSI(prefix, content)...)
 		data = data[finalOff+1:]
 	}
 

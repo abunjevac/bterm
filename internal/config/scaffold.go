@@ -33,6 +33,7 @@ func Scaffold(dir string) error {
 
 func writeDefaultConfig(dir string) error {
 	cfgPath := filepath.Join(dir, "config.toml")
+
 	if _, err := os.Stat(cfgPath); !os.IsNotExist(err) {
 		return nil
 	}
@@ -45,6 +46,7 @@ func writeDefaultConfig(dir string) error {
 func writeBuiltinThemes(dir string) error {
 	for _, name := range theme.BuiltinNames() {
 		dst := filepath.Join(dir, "themes", name+".toml")
+
 		if _, err := os.Stat(dst); !os.IsNotExist(err) {
 			continue
 		}
@@ -64,6 +66,7 @@ func writeBuiltinThemes(dir string) error {
 
 func writeDefaultKeymap(dir string) error {
 	dst := filepath.Join(dir, "keymap.toml")
+
 	if _, err := os.Stat(dst); !os.IsNotExist(err) {
 		return nil
 	}

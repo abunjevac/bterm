@@ -43,6 +43,7 @@ func (p *oscParser) Filter(data []byte) oscResult {
 		}
 
 		out = append(out, data[:idx]...)
+
 		data = data[idx:]
 
 		end, termLen := oscTerminator(data[2:])
@@ -50,6 +51,7 @@ func (p *oscParser) Filter(data []byte) oscResult {
 		if end < 0 {
 			if len(data) > maxPendingOSC {
 				out = append(out, data[0])
+
 				data = data[1:]
 
 				continue
@@ -64,6 +66,7 @@ func (p *oscParser) Filter(data []byte) oscResult {
 		seqEnd := 2 + end + termLen
 
 		keep, note, clipText := classifyOSC(content)
+
 		if note != nil {
 			notes = append(notes, *note)
 		}
@@ -159,6 +162,7 @@ func parseNotificationOSC(content []byte) (terminalNotification, bool) {
 // is "?") or clear (data is empty) returns false.
 func parseClipboardOSC(content []byte) (string, bool) {
 	parts := bytes.SplitN(content, []byte(";"), 3)
+
 	if len(parts) < 3 || string(parts[0]) != "52" {
 		return "", false
 	}

@@ -15,10 +15,11 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/abunjevac/bterm/internal/terminal"
-	"github.com/abunjevac/bterm/internal/theme"
 	coreglib "github.com/diamondburned/gotk4/pkg/core/glib"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
+
+	"github.com/abunjevac/bterm/internal/terminal"
+	"github.com/abunjevac/bterm/internal/theme"
 )
 
 // Terminal implements terminal.Terminal via the VTE cgo bridge.
@@ -91,6 +92,7 @@ func New() *Terminal {
 
 	regMu.Lock()
 	reg[t.id] = t
+
 	regMu.Unlock()
 
 	C.vteConnectTitleChanged(ptr, C.int(t.id))
@@ -119,6 +121,7 @@ func (t *Terminal) Spawn(workingDir, shell string, args []string, cb terminal.Sp
 	if spawn.err_msg != nil {
 		err := errors.New(C.GoString(spawn.err_msg))
 		C.vteFreeError(spawn.err_msg)
+
 		cb(-1, err)
 
 		return
@@ -189,6 +192,7 @@ func (t *Terminal) SetColors(p *theme.Palette) {
 	defer C.free(unsafe.Pointer(cur)) //nolint:nlreturn
 
 	cpal := make([]*C.char, len(p.Palette))
+
 	for i, c := range p.Palette {
 		cpal[i] = C.CString(c)
 	}
@@ -281,6 +285,7 @@ func (t *Terminal) copyFrontendToBackend() {
 
 	for {
 		n, err := t.frontend.Read(buf)
+
 		if n > 0 {
 			_ = t.writeBackend(buf[:n])
 		}
@@ -293,12 +298,15 @@ func (t *Terminal) copyFrontendToBackend() {
 
 func (t *Terminal) copyBackendToFrontend() {
 	var parser oscParser
+
 	buf := make([]byte, 32*1024)
 
 	for {
 		n, err := t.backend.Read(buf)
+
 		if n > 0 {
 			result := parser.Filter(buf[:n])
+
 			for _, note := range result.notes {
 				if t.onNotification != nil {
 					t.onNotification(note.Title, note.Message)
@@ -342,18 +350,22 @@ func (t *Terminal) syncBackendSize() {
 
 		var columns C.int
 		var rows C.int
+
 		if C.vteGetPtySize(C.int(t.frontend.Fd()), &columns, &rows) == 0 {
 			return
 		}
 
 		goColumns := int(columns)
 		goRows := int(rows)
+
 		if goColumns <= 0 || goRows <= 0 || (goColumns == lastColumns && goRows == lastRows) {
 			continue
 		}
 
 		lastColumns = goColumns
+
 		lastRows = goRows
+
 		C.vteSetPtySize(C.int(t.backend.Fd()), columns, rows)
 	}
 }
@@ -420,8 +432,10 @@ func goVteTitleChanged(termID C.int) {
 	ctitle := C.vteGetWindowTitle(t.ptr) //nolint:nlreturn
 
 	title := ""
+
 	if ctitle != nil {
 		title = C.GoString(ctitle)
+
 		C.free(unsafe.Pointer(ctitle))
 	}
 

@@ -65,6 +65,7 @@ func showAboutDialog(parent *gtk.ApplicationWindow) {
 		picture.SetCanShrink(true)
 		picture.SetHAlign(gtk.AlignCenter)
 		picture.SetSizeRequest(96, 96)
+
 		content.Append(picture)
 	}
 

@@ -95,6 +95,7 @@ func (w *window) spawnTerm(t terminal.Terminal, workingDir string) {
 	t.SetColors(w.palette)
 	t.SetScrollback(cfg.Scrollback)
 	t.SetScrollbar(cfg.ShowScrollbar)
+
 	w.installTerminalNotifications(t)
 	w.installClipboardDetection(t)
 
@@ -195,6 +196,7 @@ func (w *window) clipboard() *gdk.Clipboard {
 // Without this, closing the terminal that owned the clipboard clears it.
 func (w *window) reownClipboard() {
 	clip := w.clipboard()
+
 	if clip == nil {
 		return
 	}
