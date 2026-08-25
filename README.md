@@ -126,6 +126,23 @@ file_browser_args = ["{cwd}"]
 
 Terminal notifications are enabled by default. bterm listens for sequences such as `OSC 777;notify;Title;Message ST` and `OSC 9;Message ST`, then sends them directly to `org.freedesktop.Notifications` over D-Bus.
 
+Trigger a notification from the shell:
+
+```bash
+# OSC 777 — title and message
+printf '\033]777;notify;Build complete;All tests passed\a'
+
+# OSC 9 — message only
+printf '\033]9;Build complete\a'
+```
+
+bterm also detects `OSC 52` clipboard writes and shows a "Copied" toast:
+
+```bash
+# Copy "Hello" to the system clipboard
+printf '\033]52;c;SGVsbG8=\a'
+```
+
 ---
 
 ## Keyboard shortcuts

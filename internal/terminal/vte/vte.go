@@ -40,7 +40,7 @@ type Terminal struct {
 
 	onTitle         func(string)
 	onNotification  func(title, message string)
-	onClipboardCopy func()
+	onClipboardCopy func(text string)
 	onExit          func(int)
 }
 
@@ -266,7 +266,7 @@ func (t *Terminal) OnNotification(f func(title, message string)) { t.onNotificat
 
 // OnClipboardCopy sets the callback invoked when a program copies text to the
 // clipboard via OSC 52.
-func (t *Terminal) OnClipboardCopy(f func()) { t.onClipboardCopy = f }
+func (t *Terminal) OnClipboardCopy(f func(text string)) { t.onClipboardCopy = f }
 
 // OnChildExited sets the callback invoked when the shell process exits.
 func (t *Terminal) OnChildExited(f func(int)) { t.onExit = f }
@@ -300,8 +300,8 @@ func (t *Terminal) copyBackendToFrontend() {
 				}
 			}
 
-			if result.clipboardCopied && t.onClipboardCopy != nil {
-				t.onClipboardCopy()
+			if result.clipboardText != "" && t.onClipboardCopy != nil {
+				t.onClipboardCopy(result.clipboardText)
 			}
 
 			if len(result.out) > 0 {

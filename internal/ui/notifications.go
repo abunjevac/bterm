@@ -34,11 +34,16 @@ func (w *window) installTerminalNotifications(t terminal.Terminal) {
 	})
 }
 
-// installClipboardDetection wires the OSC 52 clipboard-copy callback to show a toast.
+// installClipboardDetection wires the OSC 52 clipboard-copy callback.
+// VTE does not implement OSC 52, so bterm decodes the base64 payload and
+// writes directly to the GDK clipboard, then shows a toast.
 func (w *window) installClipboardDetection(t terminal.Terminal) {
-	t.OnClipboardCopy(func() {
+	t.OnClipboardCopy(func(text string) {
 		glib.IdleAdd(func() bool {
-			w.reownClipboard()
+			if clip := w.clipboard(); clip != nil {
+				clip.SetText(text)
+			}
+
 			w.toast.show("⧉ Copied")
 
 			return false

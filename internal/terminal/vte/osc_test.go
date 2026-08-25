@@ -13,7 +13,7 @@ func TestOSCParserStrips777Notification(t *testing.T) {
 
 	require.Equal(t, "beforeafter", string(result.out))
 	require.Equal(t, []terminalNotification{{Title: "Title", Message: "Message"}}, result.notes)
-	require.False(t, result.clipboardCopied)
+	require.Empty(t, result.clipboardText)
 }
 
 func TestOSCParserStripsOSC9Notification(t *testing.T) {
@@ -23,7 +23,7 @@ func TestOSCParserStripsOSC9Notification(t *testing.T) {
 
 	require.Empty(t, result.out)
 	require.Equal(t, []terminalNotification{{Message: "Build complete"}}, result.notes)
-	require.False(t, result.clipboardCopied)
+	require.Empty(t, result.clipboardText)
 }
 
 func TestOSCParserLeavesProgressAndUnknownOSC(t *testing.T) {
@@ -34,7 +34,7 @@ func TestOSCParserLeavesProgressAndUnknownOSC(t *testing.T) {
 
 	require.Equal(t, input, string(result.out))
 	require.Empty(t, result.notes)
-	require.False(t, result.clipboardCopied)
+	require.Empty(t, result.clipboardText)
 }
 
 func TestOSCParserHandlesSplitSequence(t *testing.T) {
@@ -49,31 +49,31 @@ func TestOSCParserHandlesSplitSequence(t *testing.T) {
 	require.Equal(t, []terminalNotification{{Title: "Title", Message: "Body"}}, result.notes)
 }
 
-func TestOSCParserDetectsClipboardCopy(t *testing.T) {
+func TestOSCParserDecodesClipboardCopy(t *testing.T) {
 	var p oscParser
 
-	// OSC 52 with base64 data — should pass through and set clipboardCopied.
+	// OSC 52 with base64 "Hello" — should be stripped and decoded.
 	result := p.Filter([]byte("before\x1b]52;c;SGVsbG8=\x07after"))
 
-	require.Equal(t, "before\x1b]52;c;SGVsbG8=\x07after", string(result.out))
-	require.True(t, result.clipboardCopied)
+	require.Equal(t, "beforeafter", string(result.out))
+	require.Equal(t, "Hello", result.clipboardText)
 	require.Empty(t, result.notes)
 }
 
-func TestOSCParserDetectsClipboardCopyWithSTTerminator(t *testing.T) {
+func TestOSCParserDecodesClipboardCopyWithSTTerminator(t *testing.T) {
 	var p oscParser
 
 	result := p.Filter([]byte("\x1b]52;c;SGVsbG8=\x1b\\"))
-	require.True(t, result.clipboardCopied)
-	require.Equal(t, "\x1b]52;c;SGVsbG8=\x1b\\", string(result.out))
+	require.Equal(t, "Hello", result.clipboardText)
+	require.Empty(t, result.out)
 }
 
 func TestOSCParserIgnoresClipboardQuery(t *testing.T) {
 	var p oscParser
 
-	// OSC 52 with no data field — a query or clear, not a copy.
+	// OSC 52 with "?" — a query, not a copy. Should pass through.
 	result := p.Filter([]byte("\x1b]52;c?\x07"))
 
-	require.False(t, result.clipboardCopied)
+	require.Empty(t, result.clipboardText)
 	require.Equal(t, "\x1b]52;c?\x07", string(result.out))
 }

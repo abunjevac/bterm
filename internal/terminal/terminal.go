@@ -24,7 +24,7 @@ type Terminal interface {
 	FeedChild(data []byte)
 	OnTitleChanged(fn func(title string))
 	OnNotification(fn func(title, message string))
-	OnClipboardCopy(fn func())
+	OnClipboardCopy(fn func(text string))
 	OnChildExited(fn func(status int))
 }
 

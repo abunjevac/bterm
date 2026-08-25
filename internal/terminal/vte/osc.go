@@ -1,6 +1,9 @@
 package vte
 
-import "bytes"
+import (
+	"bytes"
+	"encoding/base64"
+)
 
 type terminalNotification struct {
 	Title   string
@@ -19,8 +22,8 @@ type oscResult struct {
 	out []byte
 	// notes are terminal notifications extracted from OSC sequences.
 	notes []terminalNotification
-	// clipboardCopied is true when an OSC 52 clipboard-write sequence was observed.
-	clipboardCopied bool
+	// clipboardText holds decoded text from an OSC 52 clipboard-write, or "".
+	clipboardText string
 }
 
 func (p *oscParser) Filter(data []byte) oscResult {
@@ -28,7 +31,7 @@ func (p *oscParser) Filter(data []byte) oscResult {
 
 	out := make([]byte, 0, len(data))
 	notes := make([]terminalNotification, 0)
-	clipboardCopied := false
+	clipboardText := ""
 
 	for len(data) > 0 {
 		idx := bytes.Index(data, []byte{0x1b, ']'})
@@ -60,13 +63,13 @@ func (p *oscParser) Filter(data []byte) oscResult {
 		content := data[2 : 2+end]
 		seqEnd := 2 + end + termLen
 
-		keep, note, copied := classifyOSC(content)
+		keep, note, clipText := classifyOSC(content)
 		if note != nil {
 			notes = append(notes, *note)
 		}
 
-		if copied {
-			clipboardCopied = true
+		if clipText != "" {
+			clipboardText = clipText
 		}
 
 		if keep {
@@ -76,7 +79,7 @@ func (p *oscParser) Filter(data []byte) oscResult {
 		data = data[seqEnd:]
 	}
 
-	return oscResult{out: out, notes: notes, clipboardCopied: clipboardCopied}
+	return oscResult{out: out, notes: notes, clipboardText: clipboardText}
 }
 
 // prependPending merges any buffered partial sequence with new data.
@@ -97,17 +100,18 @@ func (p *oscParser) prependPending(data []byte) []byte {
 // classifyOSC inspects an OSC sequence's content and returns:
 //   - keep: whether the sequence should be forwarded to the terminal widget.
 //   - note: a terminal notification, or nil if the sequence is not a notification.
-//   - copied: whether the sequence is an OSC 52 clipboard write.
-func classifyOSC(content []byte) (bool, *terminalNotification, bool) {
+//   - clipText: decoded clipboard text from an OSC 52 write, or "" if not a clipboard write.
+func classifyOSC(content []byte) (bool, *terminalNotification, string) {
 	if n, ok := parseNotificationOSC(content); ok {
-		return false, &n, false
+		return false, &n, ""
 	}
 
-	if isClipboardOSC(content) {
-		return true, nil, true
+	if text, ok := parseClipboardOSC(content); ok {
+		// VTE does not implement OSC 52 — strip it and handle the clipboard ourselves.
+		return false, nil, text
 	}
 
-	return true, nil, false
+	return true, nil, ""
 }
 
 func oscTerminator(data []byte) (int, int) {
@@ -150,16 +154,25 @@ func parseNotificationOSC(content []byte) (terminalNotification, bool) {
 	return terminalNotification{}, false
 }
 
-// isClipboardOSC reports whether content is an OSC 52 clipboard-write sequence.
-// Format: 52;c;<base64-data> or 52;<clipboard>;<base64-data>. A query (data
-// is "?") or clear (data is empty) does not count as a copy.
-func isClipboardOSC(content []byte) bool {
+// parseClipboardOSC decodes an OSC 52 clipboard-write sequence.
+// Format: 52;c;<base64-data> or 52;<selector>;<base64-data>. A query (data
+// is "?") or clear (data is empty) returns false.
+func parseClipboardOSC(content []byte) (string, bool) {
 	parts := bytes.SplitN(content, []byte(";"), 3)
 	if len(parts) < 3 || string(parts[0]) != "52" {
-		return false
+		return "", false
 	}
 
 	data := parts[2]
 	// "?" is a clipboard query, empty is a clear — neither is a copy.
-	return len(data) > 0 && string(data) != "?"
+	if len(data) == 0 || string(data) == "?" {
+		return "", false
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(string(data))
+	if err != nil {
+		return "", false
+	}
+
+	return string(decoded), true
 }
