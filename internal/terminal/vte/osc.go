@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 )
 
+const maxPendingOSC = 64 * 1024
+
 type terminalNotification struct {
 	Title   string
 	Message string
@@ -13,8 +15,6 @@ type terminalNotification struct {
 type oscParser struct {
 	pending []byte
 }
-
-const maxPendingOSC = 64 * 1024
 
 // oscResult holds the output of filtering a chunk of terminal data.
 type oscResult struct {

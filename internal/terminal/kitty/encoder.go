@@ -22,6 +22,71 @@ type keyEncoding struct {
 	final  byte // CSI final byte: 'u', '~', or a letter (A,B,C,D,H,F,P,Q,S)
 }
 
+// functionalKeys maps GDK keyvals to kitty keyboard protocol encodings.
+// Values from https://sw.kovidgoyal.net/kitty/keyboard-protocol/ functional
+// key definitions table.
+//
+//nolint:gochecknoglobals // static lookup table
+var functionalKeys = map[uint]keyEncoding{
+	gdk.KEY_Escape:       {27, 'u'},
+	gdk.KEY_Return:       {13, 'u'},
+	gdk.KEY_KP_Enter:     {13, 'u'},
+	gdk.KEY_Tab:          {9, 'u'},
+	gdk.KEY_ISO_Left_Tab: {9, 'u'},
+	gdk.KEY_BackSpace:    {127, 'u'},
+	gdk.KEY_Insert:       {2, '~'},
+	gdk.KEY_Delete:       {3, '~'},
+	gdk.KEY_Left:         {1, 'D'},
+	gdk.KEY_Right:        {1, 'C'},
+	gdk.KEY_Up:           {1, 'A'},
+	gdk.KEY_Down:         {1, 'B'},
+	gdk.KEY_Page_Up:      {5, '~'},
+	gdk.KEY_Page_Down:    {6, '~'},
+	gdk.KEY_Home:         {1, 'H'},
+	gdk.KEY_End:          {1, 'F'},
+	gdk.KEY_F1:           {1, 'P'},
+	gdk.KEY_F2:           {1, 'Q'},
+	gdk.KEY_F3:           {13, '~'},
+	gdk.KEY_F4:           {1, 'S'},
+	gdk.KEY_F5:           {15, '~'},
+	gdk.KEY_F6:           {17, '~'},
+	gdk.KEY_F7:           {18, '~'},
+	gdk.KEY_F8:           {19, '~'},
+	gdk.KEY_F9:           {20, '~'},
+	gdk.KEY_F10:          {21, '~'},
+	gdk.KEY_F11:          {23, '~'},
+	gdk.KEY_F12:          {24, '~'},
+	gdk.KEY_F13:          {57376, 'u'},
+	gdk.KEY_F14:          {57377, 'u'},
+	gdk.KEY_F15:          {57378, 'u'},
+	gdk.KEY_F16:          {57379, 'u'},
+	gdk.KEY_F17:          {57380, 'u'},
+	gdk.KEY_F18:          {57381, 'u'},
+	gdk.KEY_F19:          {57382, 'u'},
+	gdk.KEY_F20:          {57383, 'u'},
+	gdk.KEY_F21:          {57384, 'u'},
+	gdk.KEY_F22:          {57385, 'u'},
+	gdk.KEY_F23:          {57386, 'u'},
+	gdk.KEY_F24:          {57387, 'u'},
+	gdk.KEY_KP_0:         {57399, 'u'},
+	gdk.KEY_KP_1:         {57400, 'u'},
+	gdk.KEY_KP_2:         {57401, 'u'},
+	gdk.KEY_KP_3:         {57402, 'u'},
+	gdk.KEY_KP_4:         {57403, 'u'},
+	gdk.KEY_KP_5:         {57404, 'u'},
+	gdk.KEY_KP_6:         {57405, 'u'},
+	gdk.KEY_KP_7:         {57406, 'u'},
+	gdk.KEY_KP_8:         {57407, 'u'},
+	gdk.KEY_KP_9:         {57408, 'u'},
+	gdk.KEY_KP_Decimal:   {57409, 'u'},
+	gdk.KEY_KP_Divide:    {57410, 'u'},
+	gdk.KEY_KP_Multiply:  {57411, 'u'},
+	gdk.KEY_KP_Subtract:  {57412, 'u'},
+	gdk.KEY_KP_Add:       {57413, 'u'},
+	gdk.KEY_KP_Equal:     {57415, 'u'},
+	gdk.KEY_KP_Separator: {57416, 'u'},
+}
+
 // EncodeKey encodes a key press as a kitty keyboard protocol sequence.
 // Returns nil bytes when the key should fall through to VTE's legacy
 // encoding.
@@ -192,71 +257,6 @@ func alwaysEncode(keyval uint) bool {
 	}
 
 	return false
-}
-
-// functionalKeys maps GDK keyvals to kitty keyboard protocol encodings.
-// Values from https://sw.kovidgoyal.net/kitty/keyboard-protocol/ functional
-// key definitions table.
-//
-//nolint:gochecknoglobals // static lookup table
-var functionalKeys = map[uint]keyEncoding{
-	gdk.KEY_Escape:       {27, 'u'},
-	gdk.KEY_Return:       {13, 'u'},
-	gdk.KEY_KP_Enter:     {13, 'u'},
-	gdk.KEY_Tab:          {9, 'u'},
-	gdk.KEY_ISO_Left_Tab: {9, 'u'},
-	gdk.KEY_BackSpace:    {127, 'u'},
-	gdk.KEY_Insert:       {2, '~'},
-	gdk.KEY_Delete:       {3, '~'},
-	gdk.KEY_Left:         {1, 'D'},
-	gdk.KEY_Right:        {1, 'C'},
-	gdk.KEY_Up:           {1, 'A'},
-	gdk.KEY_Down:         {1, 'B'},
-	gdk.KEY_Page_Up:      {5, '~'},
-	gdk.KEY_Page_Down:    {6, '~'},
-	gdk.KEY_Home:         {1, 'H'},
-	gdk.KEY_End:          {1, 'F'},
-	gdk.KEY_F1:           {1, 'P'},
-	gdk.KEY_F2:           {1, 'Q'},
-	gdk.KEY_F3:           {13, '~'},
-	gdk.KEY_F4:           {1, 'S'},
-	gdk.KEY_F5:           {15, '~'},
-	gdk.KEY_F6:           {17, '~'},
-	gdk.KEY_F7:           {18, '~'},
-	gdk.KEY_F8:           {19, '~'},
-	gdk.KEY_F9:           {20, '~'},
-	gdk.KEY_F10:          {21, '~'},
-	gdk.KEY_F11:          {23, '~'},
-	gdk.KEY_F12:          {24, '~'},
-	gdk.KEY_F13:          {57376, 'u'},
-	gdk.KEY_F14:          {57377, 'u'},
-	gdk.KEY_F15:          {57378, 'u'},
-	gdk.KEY_F16:          {57379, 'u'},
-	gdk.KEY_F17:          {57380, 'u'},
-	gdk.KEY_F18:          {57381, 'u'},
-	gdk.KEY_F19:          {57382, 'u'},
-	gdk.KEY_F20:          {57383, 'u'},
-	gdk.KEY_F21:          {57384, 'u'},
-	gdk.KEY_F22:          {57385, 'u'},
-	gdk.KEY_F23:          {57386, 'u'},
-	gdk.KEY_F24:          {57387, 'u'},
-	gdk.KEY_KP_0:         {57399, 'u'},
-	gdk.KEY_KP_1:         {57400, 'u'},
-	gdk.KEY_KP_2:         {57401, 'u'},
-	gdk.KEY_KP_3:         {57402, 'u'},
-	gdk.KEY_KP_4:         {57403, 'u'},
-	gdk.KEY_KP_5:         {57404, 'u'},
-	gdk.KEY_KP_6:         {57405, 'u'},
-	gdk.KEY_KP_7:         {57406, 'u'},
-	gdk.KEY_KP_8:         {57407, 'u'},
-	gdk.KEY_KP_9:         {57408, 'u'},
-	gdk.KEY_KP_Decimal:   {57409, 'u'},
-	gdk.KEY_KP_Divide:    {57410, 'u'},
-	gdk.KEY_KP_Multiply:  {57411, 'u'},
-	gdk.KEY_KP_Subtract:  {57412, 'u'},
-	gdk.KEY_KP_Add:       {57413, 'u'},
-	gdk.KEY_KP_Equal:     {57415, 'u'},
-	gdk.KEY_KP_Separator: {57416, 'u'},
 }
 
 // FormatQueryResponse builds the CSI ? flags u response for a capability query.
