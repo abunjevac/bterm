@@ -11,33 +11,38 @@ import (
 
 // cmdPollInterval is how often the command monitor polls the PTY for command
 // start/end. Kept short so completion appears near-instantly; the cost is a
-// single TIOCGPGRP ioctl per tick.
+// single TIOCGPGRP ioctl per open terminal per tick.
 const cmdPollInterval = 200
 
-// cmdMonitor is a header-bar label that shows the duration of the latest
-// command in the focused terminal. While a command is running it ticks at
-// cmdPollInterval; when the command finishes it shows the final duration
-// rounded to millisecond precision.
-//
-// Command detection uses TIOCGPGRP: when the foreground process group differs
-// from the shell PID, a command is running. When focus moves to a different
-// terminal the state resets — the timer only tracks the focused pane.
-type cmdMonitor struct {
-	label *gtk.Label
-	win   *window
+type commandKey struct {
+	tab    *tab
+	paneID int
+}
 
+type commandState struct {
 	running      bool
 	start        time.Time
 	lastDuration time.Duration
-	lastTerm     terminal.Terminal
+}
+
+// cmdMonitor is a header-bar label that shows the duration of the latest
+// command in the focused terminal. It tracks every open terminal so switching
+// tabs or panes preserves running and completed command durations.
+type cmdMonitor struct {
+	label  *gtk.Label
+	win    *window
+	states map[commandKey]*commandState
+	live   map[commandKey]struct{}
 }
 
 // newCmdMonitor creates a dimmed label and starts a recurring refresh. The
 // label is packed into the header bar by the caller.
 func newCmdMonitor(w *window) *cmdMonitor {
 	m := &cmdMonitor{
-		label: gtk.NewLabel("—"),
-		win:   w,
+		label:  gtk.NewLabel("—"),
+		win:    w,
+		states: make(map[commandKey]*commandState),
+		live:   make(map[commandKey]struct{}),
 	}
 
 	m.label.AddCSSClass("bterm-memmon")
@@ -53,69 +58,104 @@ func newCmdMonitor(w *window) *cmdMonitor {
 	return m
 }
 
-// update polls the focused terminal, detects command start/end transitions,
-// and updates the label text.
+// update polls every open terminal, removes state for closed terminals, and
+// displays the focused terminal's current or latest command duration.
 func (m *cmdMonitor) update() {
-	t := m.win.focusedTerminal()
+	now := time.Now()
 
-	if t == nil {
-		m.reset()
+	clear(m.live)
 
-		return
+	for _, tab := range m.win.tabs {
+		for paneID, term := range tab.area.terms {
+			key := commandKey{tab: tab, paneID: paneID}
+
+			m.live[key] = struct{}{}
+
+			m.poll(key, term, now)
+		}
 	}
 
-	if m.lastTerm != nil && t != m.lastTerm {
-		m.reset()
+	for key := range m.states {
+		if _, ok := m.live[key]; !ok {
+			delete(m.states, key)
+		}
 	}
 
-	m.lastTerm = t
-
-	shellPID := t.ShellPID()
-
-	if shellPID == 0 {
-		m.label.SetText("—")
-
-		return
-	}
-
-	fg, err := t.ForegroundPGID()
-	if err != nil {
-		m.label.SetText("—")
-
-		return
-	}
-
-	m.advance(fg != shellPID)
+	m.renderFocused(now)
 }
 
-// advance applies a state transition based on whether a command is running.
-func (m *cmdMonitor) advance(cmdRunning bool) {
+// poll updates one terminal's state from its foreground process group.
+func (m *cmdMonitor) poll(key commandKey, term terminal.Terminal, now time.Time) {
+	shellPID := term.ShellPID()
+
+	if shellPID == 0 {
+		return
+	}
+
+	foregroundPID, err := term.ForegroundPGID()
+	if err != nil {
+		return
+	}
+
+	state := m.states[key]
+
+	if state == nil {
+		state = &commandState{}
+		m.states[key] = state
+	}
+
+	advanceCommandState(state, foregroundPID != shellPID, now)
+}
+
+// renderFocused displays the focused pane's state without changing it.
+func (m *cmdMonitor) renderFocused(now time.Time) {
+	key, ok := m.focusedKey()
+	if !ok {
+		m.label.SetText("—")
+
+		return
+	}
+
+	state := m.states[key]
+
 	switch {
-	case cmdRunning && !m.running:
-		m.running = true
-		m.start = time.Now()
-		m.label.SetText(formatCmdDuration(0))
-	case !cmdRunning && m.running:
-		m.running = false
-		m.lastDuration = time.Since(m.start)
-		m.label.SetText(formatCmdDuration(m.lastDuration))
-	case cmdRunning:
-		m.label.SetText(formatCmdDuration(time.Since(m.start)))
-	case m.lastDuration > 0:
-		m.label.SetText(formatCmdDuration(m.lastDuration))
+	case state == nil:
+		m.label.SetText("—")
+	case state.running:
+		m.label.SetText(formatCmdDuration(now.Sub(state.start)))
+	case state.lastDuration > 0:
+		m.label.SetText(formatCmdDuration(state.lastDuration))
 	default:
 		m.label.SetText("—")
 	}
 }
 
-// reset clears the monitor state, used when focus changes or no terminal exists.
-func (m *cmdMonitor) reset() {
-	m.running = false
-	m.start = time.Time{}
-	m.lastDuration = 0
-	m.lastTerm = nil
+// focusedKey returns the active tab's focused pane key.
+func (m *cmdMonitor) focusedKey() (commandKey, bool) {
+	if len(m.win.tabs) == 0 {
+		return commandKey{}, false
+	}
 
-	m.label.SetText("—")
+	tab := m.win.tabs[m.win.active]
+	paneID := tab.area.tree.Focused()
+
+	if paneID == 0 {
+		return commandKey{}, false
+	}
+
+	return commandKey{tab: tab, paneID: paneID}, true
+}
+
+// advanceCommandState applies a command start or completion transition.
+func advanceCommandState(state *commandState, running bool, now time.Time) {
+	switch {
+	case running && !state.running:
+		state.running = true
+		state.start = now
+	case !running && state.running:
+		state.running = false
+		state.lastDuration = now.Sub(state.start)
+	}
 }
 
 // formatCmdDuration renders a duration like Go's Duration.String() but rounded
