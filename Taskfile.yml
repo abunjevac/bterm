@@ -86,3 +86,9 @@ tasks:
     cmds:
       - go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
       - git-chglog -o CHANGELOG.md
+
+  hooks:
+    desc: Install lefthook git hooks (installs lefthook)
+    cmds:
+      - go install github.com/evilmartians/lefthook@v1.12.0
+      - lefthook install
