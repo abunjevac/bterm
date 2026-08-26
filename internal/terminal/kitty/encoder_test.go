@@ -362,16 +362,6 @@ func TestEncodeModifiersNone(t *testing.T) {
 	}
 }
 
-// --- Query response ---
-
-func TestFormatQueryResponse(t *testing.T) {
-	got := FormatQueryResponse(FlagDisambiguate)
-	want := "\x1b[?1u"
-	if got != want {
-		t.Fatalf("expected %q, got %q", want, got)
-	}
-}
-
 // --- All functional keys produce valid CSI ---
 
 func TestEncodeKeyAllFunctionalKeysWithMods(t *testing.T) {

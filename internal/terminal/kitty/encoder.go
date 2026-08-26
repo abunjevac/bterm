@@ -258,8 +258,3 @@ func alwaysEncode(keyval uint) bool {
 
 	return false
 }
-
-// FormatQueryResponse builds the CSI ? flags u response for a capability query.
-func FormatQueryResponse(flags int) string {
-	return "\x1b[?" + strconv.Itoa(flags) + "u"
-}
