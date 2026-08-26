@@ -34,6 +34,7 @@ type Terminal struct {
 
 	writeMu   sync.Mutex
 	closeOnce sync.Once
+	done      chan struct{}
 
 	columns int
 	rows    int
@@ -88,6 +89,7 @@ func New() *Terminal {
 		id:       int(nextID.Add(1)),
 		columns:  80,
 		rows:     24,
+		done:     make(chan struct{}),
 	}
 
 	regMu.Lock()
@@ -293,9 +295,16 @@ func (t *Terminal) copyFrontendToBackend() {
 		if err != nil {
 			return
 		}
+
+		select {
+		case <-t.done:
+			return
+		default:
+		}
 	}
 }
 
+//nolint:cyclop // read-filter-forward loop is inherently branchy
 func (t *Terminal) copyBackendToFrontend() {
 	var parser oscParser
 
@@ -333,6 +342,12 @@ func (t *Terminal) copyBackendToFrontend() {
 		if err != nil {
 			return
 		}
+
+		select {
+		case <-t.done:
+			return
+		default:
+		}
 	}
 }
 
@@ -343,9 +358,11 @@ func (t *Terminal) syncBackendSize() {
 	lastColumns := t.columns
 	lastRows := t.rows
 
-	for range ticker.C {
-		if t.frontend == nil || t.backend == nil {
+	for {
+		select {
+		case <-t.done:
 			return
+		case <-ticker.C:
 		}
 
 		var columns C.int
@@ -388,6 +405,8 @@ func (t *Terminal) writeBackend(data []byte) error {
 
 func (t *Terminal) closeProxy() {
 	t.closeOnce.Do(func() {
+		close(t.done)
+
 		if t.frontend != nil {
 			_ = t.frontend.Close()
 		}
