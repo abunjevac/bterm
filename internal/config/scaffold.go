@@ -71,7 +71,7 @@ func writeDefaultKeymap(dir string) error {
 		return nil
 	}
 
-	content := `# bterm keymap — action = "binding" (or = ["b1","b2"])` + "\n" + keymap.DefaultKeymapTOML
+	content := keymap.KeymapHeader + keymap.DefaultKeymapTOML
 
 	if err := os.WriteFile(dst, []byte(content), 0o644); err != nil { //nolint:gosec
 		return fmt.Errorf("write keymap: %w", err)

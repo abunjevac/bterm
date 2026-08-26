@@ -14,6 +14,9 @@ import (
 //go:embed default_keymap.toml
 var DefaultKeymapTOML string
 
+// KeymapHeader is the comment header prepended to the default keymap TOML.
+const KeymapHeader = `# bterm keymap — action = "binding" (or = ["b1","b2"])` + "\n"
+
 // Layout holds the resolved binding → action mapping.
 type Layout struct {
 	bindings  map[string]Action // normalized binding string → Action
