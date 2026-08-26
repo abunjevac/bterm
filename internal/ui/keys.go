@@ -85,6 +85,10 @@ func buildBinding(keyval uint, state gdk.ModifierType) string {
 		parts = append(parts, "alt")
 	}
 
+	if state&gdk.SuperMask != 0 {
+		parts = append(parts, "super")
+	}
+
 	name := strings.ToLower(gdk.KeyvalName(gdk.KeyvalToLower(keyval)))
 
 	parts = append(parts, name)
