@@ -60,8 +60,11 @@ func (w *window) buildTabBar() {
 	header.PackStart(w.tabBox)
 
 	w.memMon = newMemMonitor()
+	w.uptimeMon = newUptimeMonitor()
 	header.PackEnd(w.buildMenuButton())
 	header.PackEnd(w.memMon.label)
+	header.PackEnd(gtk.NewLabel("·"))
+	header.PackEnd(w.uptimeMon.label)
 
 	w.win.SetTitlebar(header)
 

@@ -24,12 +24,13 @@ type window struct {
 
 	workingDir string
 
-	tabs   []*tab
-	active int
-	stack  *gtk.Stack
-	tabBox *gtk.Box
-	toast  *toaster
-	memMon *memMonitor
+	tabs      []*tab
+	active    int
+	stack     *gtk.Stack
+	tabBox    *gtk.Box
+	toast     *toaster
+	memMon    *memMonitor
+	uptimeMon *uptimeMonitor
 
 	fontFamily      string
 	fontSize        float64
