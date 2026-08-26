@@ -29,6 +29,7 @@ type window struct {
 	stack  *gtk.Stack
 	tabBox *gtk.Box
 	toast  *toaster
+	memMon *memMonitor
 
 	fontFamily      string
 	fontSize        float64

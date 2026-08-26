@@ -59,13 +59,9 @@ func (w *window) buildTabBar() {
 	header.PackStart(addBtn)
 	header.PackStart(w.tabBox)
 
-	menuBtn := gtk.NewMenuButton()
-
-	menuBtn.SetIconName("open-menu-symbolic")
-	menuBtn.AddCSSClass("flat")
-	menuBtn.SetPopover(w.buildMenuPopover())
-
-	header.PackEnd(menuBtn)
+	w.memMon = newMemMonitor()
+	header.PackEnd(w.buildMenuButton())
+	header.PackEnd(w.memMon.label)
 
 	w.win.SetTitlebar(header)
 
@@ -268,6 +264,17 @@ func (w *window) renumber() {
 	for i, t := range w.tabs {
 		t.numLabel.SetText(fmt.Sprintf("%d", i+1))
 	}
+}
+
+// buildMenuButton returns the header menu button that opens the main popover.
+func (w *window) buildMenuButton() *gtk.MenuButton {
+	menuBtn := gtk.NewMenuButton()
+
+	menuBtn.SetIconName("open-menu-symbolic")
+	menuBtn.AddCSSClass("flat")
+	menuBtn.SetPopover(w.buildMenuPopover())
+
+	return menuBtn
 }
 
 // buildMenuPopover builds the popover attached to the hamburger menu button.
