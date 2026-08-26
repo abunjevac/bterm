@@ -18,11 +18,6 @@ const (
 	btermDesktopEntry = "io.github.abunjevac.bterm"
 )
 
-type terminalNotification struct {
-	Title   string
-	Message string
-}
-
 func (w *window) installTerminalNotifications(t terminal.Terminal) {
 	cfg := w.bundle.Config
 
@@ -31,7 +26,7 @@ func (w *window) installTerminalNotifications(t terminal.Terminal) {
 	}
 
 	t.OnNotification(func(title, message string) {
-		w.handleTerminalNotification(terminalNotification{Title: title, Message: message})
+		w.handleTerminalNotification(terminal.Notification{Title: title, Message: message})
 	})
 }
 
@@ -52,7 +47,7 @@ func (w *window) installClipboardDetection(t terminal.Terminal) {
 	})
 }
 
-func (w *window) handleTerminalNotification(n terminalNotification) {
+func (w *window) handleTerminalNotification(n terminal.Notification) {
 	cfg := w.bundle.Config
 
 	if cfg == nil || cfg.TerminalNotificationMethod != config.TerminalNotificationDBus {

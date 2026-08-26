@@ -44,7 +44,7 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 		return kittyResult{out: data}
 	}
 
-	data = p.prependPending(data)
+	data = prependPending(&p.pending, data)
 
 	out := make([]byte, 0, len(data))
 	response := []byte{}
@@ -201,20 +201,6 @@ func (p *kittyParser) handlePopFlags(s string) string {
 	p.state.Pop(count)
 
 	return ""
-}
-
-func (p *kittyParser) prependPending(data []byte) []byte {
-	if len(p.pending) == 0 {
-		return data
-	}
-
-	combined := make([]byte, 0, len(p.pending)+len(data))
-	combined = append(combined, p.pending...)
-	combined = append(combined, data...)
-
-	p.pending = nil
-
-	return combined
 }
 
 // isKittyCSIPrefix reports whether byte is a kitty keyboard protocol

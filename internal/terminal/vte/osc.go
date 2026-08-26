@@ -3,14 +3,11 @@ package vte
 import (
 	"bytes"
 	"encoding/base64"
+
+	"github.com/abunjevac/bterm/internal/terminal"
 )
 
 const maxPendingOSC = 64 * 1024
-
-type terminalNotification struct {
-	Title   string
-	Message string
-}
 
 type oscParser struct {
 	pending []byte
@@ -18,16 +15,16 @@ type oscParser struct {
 
 // oscResult holds the output of filtering a chunk of terminal data.
 type oscResult struct {
-	out           []byte                 // data to forward to the terminal widget
-	notes         []terminalNotification // terminal notifications extracted from OSC sequences
-	clipboardText string                 // decoded text from an OSC 52 clipboard-write, or ""
+	out           []byte                  // data to forward to the terminal widget
+	notes         []terminal.Notification // terminal notifications extracted from OSC sequences
+	clipboardText string                  // decoded text from an OSC 52 clipboard-write, or ""
 }
 
 func (p *oscParser) Filter(data []byte) oscResult {
-	data = p.prependPending(data)
+	data = prependPending(&p.pending, data)
 
 	out := make([]byte, 0, len(data))
-	notes := make([]terminalNotification, 0)
+	notes := make([]terminal.Notification, 0)
 	clipboardText := ""
 
 	for len(data) > 0 {
@@ -82,17 +79,17 @@ func (p *oscParser) Filter(data []byte) oscResult {
 	return oscResult{out: out, notes: notes, clipboardText: clipboardText}
 }
 
-// prependPending merges any buffered partial sequence with new data.
-func (p *oscParser) prependPending(data []byte) []byte {
-	if len(p.pending) == 0 {
+// prependPending merges any buffered partial data with new data, clearing the buffer.
+func prependPending(pending *[]byte, data []byte) []byte {
+	if len(*pending) == 0 {
 		return data
 	}
 
-	combined := make([]byte, 0, len(p.pending)+len(data))
-	combined = append(combined, p.pending...)
+	combined := make([]byte, 0, len(*pending)+len(data))
+	combined = append(combined, *pending...)
 	combined = append(combined, data...)
 
-	p.pending = nil
+	*pending = nil
 
 	return combined
 }
@@ -101,7 +98,7 @@ func (p *oscParser) prependPending(data []byte) []byte {
 //   - keep: whether the sequence should be forwarded to the terminal widget.
 //   - note: a terminal notification, or nil if the sequence is not a notification.
 //   - clipText: decoded clipboard text from an OSC 52 write, or "" if not a clipboard write.
-func classifyOSC(content []byte) (bool, *terminalNotification, string) {
+func classifyOSC(content []byte) (bool, *terminal.Notification, string) {
 	if n, ok := parseNotificationOSC(content); ok {
 		return false, &n, ""
 	}
@@ -132,11 +129,11 @@ func oscTerminator(data []byte) (int, int) {
 	}
 }
 
-func parseNotificationOSC(content []byte) (terminalNotification, bool) {
+func parseNotificationOSC(content []byte) (terminal.Notification, bool) {
 	parts := bytes.SplitN(content, []byte(";"), 4)
 
 	if len(parts) >= 3 && string(parts[0]) == "777" && string(parts[1]) == "notify" {
-		note := terminalNotification{Title: string(parts[2])}
+		note := terminal.Notification{Title: string(parts[2])}
 
 		if len(parts) == 4 {
 			note.Message = string(parts[3])
@@ -148,10 +145,10 @@ func parseNotificationOSC(content []byte) (terminalNotification, bool) {
 	parts = bytes.SplitN(content, []byte(";"), 3)
 
 	if len(parts) >= 2 && string(parts[0]) == "9" && string(parts[1]) != "4" {
-		return terminalNotification{Message: string(content[2:])}, true
+		return terminal.Notification{Message: string(content[2:])}, true
 	}
 
-	return terminalNotification{}, false
+	return terminal.Notification{}, false
 }
 
 // parseClipboardOSC decodes an OSC 52 clipboard-write sequence.

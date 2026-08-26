@@ -9,6 +9,12 @@ import (
 // SpawnCallback reports the result of starting a shell.
 type SpawnCallback func(pid int, err error)
 
+// Notification is a terminal notification extracted from an OSC sequence.
+type Notification struct {
+	Title   string
+	Message string
+}
+
 // Terminal is one shell-backed terminal widget.
 //
 //nolint:interfacebloat // terminal abstraction requires many methods

@@ -3,6 +3,7 @@ package vte
 import (
 	"testing"
 
+	"github.com/abunjevac/bterm/internal/terminal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -12,7 +13,7 @@ func TestOSCParserStrips777Notification(t *testing.T) {
 	result := p.Filter([]byte("before\x1b]777;notify;Title;Message\x07after"))
 
 	require.Equal(t, "beforeafter", string(result.out))
-	require.Equal(t, []terminalNotification{{Title: "Title", Message: "Message"}}, result.notes)
+	require.Equal(t, []terminal.Notification{{Title: "Title", Message: "Message"}}, result.notes)
 	require.Empty(t, result.clipboardText)
 }
 
@@ -22,7 +23,7 @@ func TestOSCParserStripsOSC9Notification(t *testing.T) {
 	result := p.Filter([]byte("\x1b]9;Build complete\x1b\\"))
 
 	require.Empty(t, result.out)
-	require.Equal(t, []terminalNotification{{Message: "Build complete"}}, result.notes)
+	require.Equal(t, []terminal.Notification{{Message: "Build complete"}}, result.notes)
 	require.Empty(t, result.clipboardText)
 }
 
@@ -46,7 +47,7 @@ func TestOSCParserHandlesSplitSequence(t *testing.T) {
 
 	result = p.Filter([]byte("tle;Body\x07b"))
 	require.Equal(t, "b", string(result.out))
-	require.Equal(t, []terminalNotification{{Title: "Title", Message: "Body"}}, result.notes)
+	require.Equal(t, []terminal.Notification{{Title: "Title", Message: "Body"}}, result.notes)
 }
 
 func TestOSCParserDecodesClipboardCopy(t *testing.T) {
