@@ -80,3 +80,9 @@ tasks:
     desc: Tidy Go modules
     cmds:
       - go mod tidy
+
+  changelog:
+    desc: Generate CHANGELOG.md from git history (installs git-chglog)
+    cmds:
+      - go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
+      - git-chglog -o CHANGELOG.md

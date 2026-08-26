@@ -1,0 +1,36 @@
+
+## v0.1.0
+
+- Silence funlen linter warnings
+- Pass working directory via CLI param
+- Group config items into groups
+- Extract dialogs into separate components
+- Switch from window width/height to columns/rows
+- Update default config
+- Ayu theme
+- Basic config dialog
+- Project documentation
+- Resolve action binding
+- Claim slack space for terminal
+- Close popover when selecting dialog
+- Icon assets
+- About/shortcuts dialogs
+- Set open config shortcut to ctrl+comma
+- Font zoom & reset
+- Clipboard toast
+- Fix linter warnings
+- Tabs in titlebar
+- Pane widget layer
+- Pane-tree model
+- Hook main to UI application
+- UI application
+- Config bundle
+- VTE cgo bridge
+- Terminal interface
+- Version tag
+- Scaffold config, themes and keymap
+- Keymap support
+- Theme support
+- Config module
+- Tooling setup
+- Project setup
