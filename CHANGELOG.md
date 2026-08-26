@@ -1,4 +1,77 @@
 
+## v0.2.0
+
+- Excude prepare release commits from change log
+- Release tasks
+- Reformat code
+- Timers visibility config option
+- Track duration for each terminal
+- Fix monitor text color
+- Current command duration timer
+- Up-time display
+- Memory usage display
+- Fix TestAboutCopyright to match LICENSE
+- Protect clear/reset focused with nil guard
+- Fix OSC 9 notification heuristic
+- Reuse kitty parser buffer
+- Return exit code from app to main
+- Pre-push hook to verify changelog is current
+- Lefthook pre-commit hooks
+- Changelog generator
+- Control kitty availability via build flag
+- Track explicit terminal shutdown
+- Move KittyDisambiguate to capability interface
+- Move assets package under internal
+- Validate theme color hex codes
+- Extract shared shell-setup
+- Cap vteSetColors palette length at 16
+- Emit super modifier in buildBinding
+- Fix VTE registry leak on terminal exit
+- Increase CI lint timeout and pre-warm cgo cache
+- Lint test files
+- CI quality gate workflow
+- Extract terminal notification type
+- Extract keymap header
+- Remove unused code
+- Update README with fresh facts
+- Generate split icons
+- Move constants and global vars to top of file
+- Reformat comments
+- Reformat code
+- Update to go 1.27
+- Extract package documentation into doc.go files
+- Implement kitty keyboard protocol
+- Handle OSC 52 clipboard
+- Fix linter issues
+- Disable exhaustruct_v5 linter
+- Preserve clipboard content on exit
+- Suppress toast on empty selection
+- Show toast when terminal app copies to clipboard via OSC 52
+- Reorder tabs with mouse
+- Swap Shift+Enter and Ctrl+Enter newline bindings
+- Wrap Shift+Enter newline in bracketed-paste markers
+- Reclaim F10 for the terminal instead of GTK's header bar
+- Configure UI font
+- Font control via ctrl+scroller
+- Jeyboard shortcut for context menu
+- Print/overwrite shortcuts map
+- Alternate shortcuts for font size control
+- Grab focus on tab pane creation
+- Configure scrollbar visibility
+- Add new tab via toolbar action
+- Split tab via toolbar actions
+- Refine preferences, shortcuts, and about dialogs
+- Group shortcuts in cards
+- Launch external editor or file browser from current directory
+- Show hand cursor while dragging
+- Undock tab
+- Set VTE environment variables in spawned shell
+- Compress binary with upx
+- Fix linter warnings
+- Context menu
+- Terminal notifications
+- Make Shift/Ctrl+Enter insert newline instead of submitting
+
 ## v0.1.0
 
 - Silence funlen linter warnings
