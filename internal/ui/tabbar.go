@@ -71,18 +71,49 @@ func (w *window) buildTabBar() {
 }
 
 // packStatusMonitors creates and packs the status labels (command duration,
-// uptime, memory) into the right side of the header bar, left of the menu.
+// uptime, memory) and the per-window timer toggle into the header bar.
 func (w *window) packStatusMonitors(header *gtk.HeaderBar) {
 	w.memMon = newMemMonitor()
 	w.uptimeMon = newUptimeMonitor()
 	w.cmdMon = newCmdMonitor(w)
 
+	w.timerBox = gtk.NewBox(gtk.OrientationHorizontal, 0)
+
+	w.timerBox.Append(w.cmdMon.label)
+	w.timerBox.Append(gtk.NewLabel("·"))
+	w.timerBox.Append(w.uptimeMon.label)
+	w.timerBox.Append(gtk.NewLabel("·"))
+
+	w.timerToggle = gtk.NewToggleButton()
+
+	w.timerToggle.SetIconName("preferences-system-time-symbolic")
+	w.timerToggle.AddCSSClass("flat")
+	w.timerToggle.SetActive(w.bundle.Config.ShowTimers)
+	w.timerToggle.ConnectToggled(func() { w.setTimersVisible(w.timerToggle.Active()) })
+
 	header.PackEnd(w.buildMenuButton())
+	header.PackEnd(w.timerToggle)
 	header.PackEnd(w.memMon.label)
-	header.PackEnd(gtk.NewLabel("·"))
-	header.PackEnd(w.uptimeMon.label)
-	header.PackEnd(gtk.NewLabel("·"))
-	header.PackEnd(w.cmdMon.label)
+	header.PackEnd(w.timerBox)
+
+	w.setTimersVisible(w.bundle.Config.ShowTimers)
+}
+
+// setTimersVisible applies per-window timer visibility without changing config.
+func (w *window) setTimersVisible(visible bool) {
+	w.timerBox.SetVisible(visible)
+
+	if w.timerToggle.Active() != visible {
+		w.timerToggle.SetActive(visible)
+	}
+
+	if visible {
+		w.timerToggle.SetTooltipText("Hide timers")
+
+		return
+	}
+
+	w.timerToggle.SetTooltipText("Show timers")
 }
 
 // addTab creates a new tab with the given cwd, appends it to the tab list.

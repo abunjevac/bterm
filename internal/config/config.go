@@ -26,6 +26,7 @@ type Config struct {
 	ShellArgs                  []string `toml:"shell_args"`
 	Scrollback                 int      `toml:"scrollback"`
 	ShowScrollbar              bool     `toml:"show_scrollbar"`
+	ShowTimers                 bool     `toml:"show_timers"`
 	WindowColumns              int      `toml:"window_columns"`
 	WindowRows                 int      `toml:"window_rows"`
 	Title                      string   `toml:"title"`
@@ -56,6 +57,10 @@ func Parse(data string) (*Config, error) {
 	}
 
 	applyDefaults(&cfg)
+
+	if !meta.IsDefined("show_timers") {
+		cfg.ShowTimers = true
+	}
 
 	if err := validateTerminalNotificationMethod(cfg.TerminalNotificationMethod); err != nil {
 		return nil, err

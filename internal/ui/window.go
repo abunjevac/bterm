@@ -24,14 +24,16 @@ type window struct {
 
 	workingDir string
 
-	tabs      []*tab
-	active    int
-	stack     *gtk.Stack
-	tabBox    *gtk.Box
-	toast     *toaster
-	memMon    *memMonitor
-	uptimeMon *uptimeMonitor
-	cmdMon    *cmdMonitor
+	tabs        []*tab
+	active      int
+	stack       *gtk.Stack
+	tabBox      *gtk.Box
+	toast       *toaster
+	memMon      *memMonitor
+	uptimeMon   *uptimeMonitor
+	cmdMon      *cmdMonitor
+	timerBox    *gtk.Box
+	timerToggle *gtk.ToggleButton
 
 	fontFamily      string
 	fontSize        float64
@@ -141,6 +143,10 @@ func (w *window) applyNewConfig(old, next config.Config) { //nolint:cyclop // li
 		}
 
 		applyStyle(w.palette, w.uiFontFamily, w.uiFontSize)
+	}
+
+	if next.ShowTimers != old.ShowTimers {
+		w.setTimersVisible(next.ShowTimers)
 	}
 
 	for _, tab := range w.tabs {

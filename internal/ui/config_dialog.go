@@ -24,6 +24,7 @@ type configForm struct {
 	shellArgsEntry          *gtk.Entry
 	scrollbackSpin          *gtk.SpinButton
 	scrollbarSwitch         *gtk.Switch
+	timersSwitch            *gtk.Switch
 	widthSpin               *gtk.SpinButton
 	heightSpin              *gtk.SpinButton
 	titleEntry              *gtk.Entry
@@ -73,6 +74,7 @@ func (f *configForm) collect(base config.Config) config.Config {
 
 	next.Scrollback = int(f.scrollbackSpin.Value())
 	next.ShowScrollbar = f.scrollbarSwitch.Active()
+	next.ShowTimers = f.timersSwitch.Active()
 	next.WindowColumns = int(f.widthSpin.Value())
 	next.WindowRows = int(f.heightSpin.Value())
 	next.Title = f.titleEntry.Text()
@@ -161,9 +163,15 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	f.themeDD.SetSelected(cfgThemeIndex(f.themes, cfg.Theme))
 	f.themeDD.SetHExpand(true)
 
+	f.timersSwitch = gtk.NewSwitch()
+
+	f.timersSwitch.SetActive(cfg.ShowTimers)
+	f.timersSwitch.SetHAlign(gtk.AlignStart)
+
 	appearanceGrid := cfgGrid()
 
 	cfgAttach(appearanceGrid, 0, "Theme", f.themeDD)
+	cfgAttach(appearanceGrid, 1, "Show timers", f.timersSwitch)
 
 	// shell
 	f.shellEntry = cfgEntry(cfg.Shell, "auto-detect from $SHELL")

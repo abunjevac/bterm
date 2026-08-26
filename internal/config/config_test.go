@@ -23,6 +23,7 @@ func TestParseAppliesDefaults(t *testing.T) {
 	require.InEpsilon(t, 16.0, cfg.FontSize, 0.001)
 	require.Equal(t, "ayu", cfg.Theme)
 	require.Equal(t, 5000, cfg.Scrollback)
+	require.True(t, cfg.ShowTimers)
 	require.Equal(t, 180, cfg.WindowColumns)
 	require.Equal(t, 40, cfg.WindowRows)
 	require.Equal(t, "dbus", cfg.TerminalNotificationMethod)
@@ -45,6 +46,15 @@ func TestParseOverrides(t *testing.T) {
 	require.Equal(t, "tokyo-night", cfg.Theme)
 	require.Equal(t, 10000, cfg.Scrollback)
 	require.Equal(t, "off", cfg.TerminalNotificationMethod)
+}
+
+func TestParseAllowsTimersToBeDisabled(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := config.Parse(`show_timers = false`)
+	require.NoError(t, err)
+
+	require.False(t, cfg.ShowTimers)
 }
 
 func TestParseRejectsUnknownKeys(t *testing.T) {
