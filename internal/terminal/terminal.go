@@ -16,8 +16,6 @@ type Notification struct {
 }
 
 // Terminal is one shell-backed terminal widget.
-//
-//nolint:interfacebloat // terminal abstraction requires many methods
 type Terminal interface {
 	Widget() gtk.Widgetter
 	Spawn(workingDir, shell string, args []string, cb SpawnCallback)
@@ -30,9 +28,6 @@ type Terminal interface {
 	Copy()
 	Paste()
 	FeedChild(data []byte)
-	// KittyDisambiguate reports whether the kitty keyboard protocol
-	// disambiguate mode is active for this terminal.
-	KittyDisambiguate() bool
 	OnTitleChanged(fn func(title string))
 	OnNotification(fn func(title, message string))
 	OnClipboardCopy(fn func(text string))

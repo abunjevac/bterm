@@ -14,6 +14,12 @@ import (
 // send to the child process for an unmodified F10 key press.
 const f10Sequence = "\x1b[21~"
 
+// kittyDisambiguateTerminal is an optional capability for terminals that
+// implement the kitty keyboard protocol disambiguate mode.
+type kittyDisambiguateTerminal interface {
+	KittyDisambiguate() bool
+}
+
 // installKeys attaches a capture-phase key controller to the window.
 func (w *window) installKeys() {
 	ctl := gtk.NewEventControllerKey()
@@ -42,11 +48,13 @@ func (w *window) installKeys() {
 		// no keymap binding matched. If the focused terminal has the
 		// kitty keyboard protocol disambiguate mode active, encode the
 		// key as a CSI u sequence and send it directly to the shell
-		if ft := w.focusedTerminal(); ft != nil && ft.KittyDisambiguate() {
-			if r := kitty.EncodeKey(keyval, state); r.Bytes() != nil {
-				ft.FeedChild(r.Bytes())
+		if ft := w.focusedTerminal(); ft != nil {
+			if kt, ok := ft.(kittyDisambiguateTerminal); ok && kt.KittyDisambiguate() {
+				if r := kitty.EncodeKey(keyval, state); r.Bytes() != nil {
+					ft.FeedChild(r.Bytes())
 
-				return true
+					return true
+				}
 			}
 		}
 
