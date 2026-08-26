@@ -7,3 +7,15 @@ pre-commit:
       run: task test
     scan:
       run: task scan
+
+pre-push:
+  commands:
+    changelog:
+      run: |
+        before=$(git show :CHANGELOG.md 2>/dev/null || git show HEAD:CHANGELOG.md 2>/dev/null || echo "")
+        task changelog
+        after=$(cat CHANGELOG.md)
+        if [ "$before" != "$after" ]; then
+          echo "CHANGELOG.md is out of date. Regenerated — review, commit, and push again."
+          exit 1
+        fi
