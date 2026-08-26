@@ -59,12 +59,7 @@ func (w *window) buildTabBar() {
 	header.PackStart(addBtn)
 	header.PackStart(w.tabBox)
 
-	w.memMon = newMemMonitor()
-	w.uptimeMon = newUptimeMonitor()
-	header.PackEnd(w.buildMenuButton())
-	header.PackEnd(w.memMon.label)
-	header.PackEnd(gtk.NewLabel("·"))
-	header.PackEnd(w.uptimeMon.label)
+	w.packStatusMonitors(header)
 
 	w.win.SetTitlebar(header)
 
@@ -73,6 +68,21 @@ func (w *window) buildTabBar() {
 	w.stack.SetVExpand(true)
 	w.stack.SetHExpand(true)
 	w.stack.SetTransitionType(gtk.StackTransitionTypeNone)
+}
+
+// packStatusMonitors creates and packs the status labels (command duration,
+// uptime, memory) into the right side of the header bar, left of the menu.
+func (w *window) packStatusMonitors(header *gtk.HeaderBar) {
+	w.memMon = newMemMonitor()
+	w.uptimeMon = newUptimeMonitor()
+	w.cmdMon = newCmdMonitor(w)
+
+	header.PackEnd(w.buildMenuButton())
+	header.PackEnd(w.memMon.label)
+	header.PackEnd(gtk.NewLabel("·"))
+	header.PackEnd(w.uptimeMon.label)
+	header.PackEnd(gtk.NewLabel("·"))
+	header.PackEnd(w.cmdMon.label)
 }
 
 // addTab creates a new tab with the given cwd, appends it to the tab list.

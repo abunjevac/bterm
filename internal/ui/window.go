@@ -31,6 +31,7 @@ type window struct {
 	toast     *toaster
 	memMon    *memMonitor
 	uptimeMon *uptimeMonitor
+	cmdMon    *cmdMonitor
 
 	fontFamily      string
 	fontSize        float64

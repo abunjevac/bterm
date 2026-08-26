@@ -12,6 +12,7 @@ import (
 	"os"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 	"unsafe"
 
@@ -38,6 +39,8 @@ type Terminal struct {
 
 	columns int
 	rows    int
+
+	shellPID int
 
 	kitty kittyParser
 
@@ -131,6 +134,7 @@ func (t *Terminal) Spawn(workingDir, shell string, args []string, cb terminal.Sp
 
 	t.frontend = os.NewFile(uintptr(spawn.frontend_slave_fd), "bterm-vte-frontend")
 	t.backend = os.NewFile(uintptr(spawn.backend_master_fd), "bterm-shell-pty")
+	t.shellPID = int(spawn.pid)
 
 	go t.copyFrontendToBackend()
 	go t.copyBackendToFrontend()
@@ -281,6 +285,26 @@ func (t *Terminal) KittyDisambiguate() bool { return t.kitty.Disambiguate() }
 
 // OnChildExited sets the callback invoked when the shell process exits.
 func (t *Terminal) OnChildExited(f func(int)) { t.onExit = f }
+
+// ShellPID returns the PID of the spawned shell process, or 0 before spawn.
+func (t *Terminal) ShellPID() int { return t.shellPID }
+
+// ForegroundPGID returns the foreground process group ID of the PTY. When it
+// differs from ShellPID, a command is running; when equal, the shell is idle.
+func (t *Terminal) ForegroundPGID() (int, error) {
+	if t.backend == nil {
+		return -1, errors.New("terminal: pty not available")
+	}
+
+	var pgrp int32
+
+	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, t.backend.Fd(), syscall.TIOCGPGRP, uintptr(unsafe.Pointer(&pgrp)))
+	if errno != 0 {
+		return -1, errno
+	}
+
+	return int(pgrp), nil
+}
 
 func (t *Terminal) copyFrontendToBackend() {
 	buf := make([]byte, 32*1024)

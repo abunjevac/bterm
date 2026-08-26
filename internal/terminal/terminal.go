@@ -16,6 +16,8 @@ type Notification struct {
 }
 
 // Terminal is one shell-backed terminal widget.
+//
+//nolint:interfacebloat // intentionally comprehensive; splitting would fragment a cohesive abstraction
 type Terminal interface {
 	Widget() gtk.Widgetter
 	Spawn(workingDir, shell string, args []string, cb SpawnCallback)
@@ -32,6 +34,8 @@ type Terminal interface {
 	OnNotification(fn func(title, message string))
 	OnClipboardCopy(fn func(text string))
 	OnChildExited(fn func(status int))
+	ShellPID() int
+	ForegroundPGID() (int, error)
 }
 
 // Factory creates new terminals. The VTE implementation provides one.
