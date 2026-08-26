@@ -60,7 +60,7 @@ task build          # requires Task — https://taskfile.dev
 # or: go build -o bterm ./cmd/bterm
 ```
 
-The generated GTK icon resource is committed. After changing an icon SVG or `assets/icons.gresource.xml`, install
+The generated GTK icon resource is committed. After changing an icon SVG or `internal/assets/icons.gresource.xml`, install
 `glib-compile-resources` (`libglib2.0-bin` on Ubuntu/Debian) and regenerate it explicitly:
 
 ```bash

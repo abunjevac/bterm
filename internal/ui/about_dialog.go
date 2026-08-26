@@ -8,7 +8,7 @@ import (
 	"github.com/diamondburned/gotk4/pkg/glib/v2"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
-	"github.com/abunjevac/bterm/assets"
+	"github.com/abunjevac/bterm/internal/assets"
 	"github.com/abunjevac/bterm/internal/version"
 )
 

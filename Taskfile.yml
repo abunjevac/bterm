@@ -4,13 +4,13 @@ tasks:
   generate-icons:
     desc: Generate embedded GTK icon resources
     sources:
-      - assets/icons.gresource.xml
-      - assets/split-left-right.svg
-      - assets/split-top-bottom.svg
+      - internal/assets/icons.gresource.xml
+      - internal/assets/split-left-right.svg
+      - internal/assets/split-top-bottom.svg
     generates:
-      - assets/icons.gresource
+      - internal/assets/icons.gresource
     cmds:
-      - go generate ./assets
+      - go generate ./internal/assets
 
   build:
     desc: Build bterm binary
@@ -63,8 +63,8 @@ tasks:
     desc: Install desktop launcher and app icon for the current user
     cmds:
       - mkdir -p ~/.local/share/icons/hicolor/512x512/apps ~/.local/share/applications
-      - cp assets/io.github.abunjevac.bterm.png ~/.local/share/icons/hicolor/512x512/apps/io.github.abunjevac.bterm.png
-      - cp assets/io.github.abunjevac.bterm.desktop ~/.local/share/applications/io.github.abunjevac.bterm.desktop
+      - cp internal/assets/io.github.abunjevac.bterm.png ~/.local/share/icons/hicolor/512x512/apps/io.github.abunjevac.bterm.png
+      - cp internal/assets/io.github.abunjevac.bterm.desktop ~/.local/share/applications/io.github.abunjevac.bterm.desktop
       - update-desktop-database ~/.local/share/applications
       - gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor
 
