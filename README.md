@@ -216,15 +216,16 @@ All bindings are configurable in `~/.config/bterm/keymap.toml`. The current set 
 
 ## Releasing
 
-Tag a commit to trigger an automated GitHub Actions build:
+Prepare and push a release using a semantic version, with or without the `v` prefix:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+task prepare-release VERSION=0.2.0
+task push-release VERSION=0.2.0
 ```
 
-The workflow builds a Linux binary, creates a GitHub release with auto-generated notes, and prunes releases beyond the
-three most recent.
+The prepare task generates and commits `CHANGELOG.md`, then creates an annotated release tag. The push task atomically
+pushes the current branch and release tag. Pushing the tag triggers the GitHub Actions workflow, which builds a Linux
+binary, creates a GitHub release with auto-generated notes, and prunes releases beyond the three most recent.
 
 ---
 

@@ -87,6 +87,33 @@ tasks:
       - go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
       - git-chglog -o CHANGELOG.md
 
+  prepare-release:
+    desc: Generate the changelog, commit it, and tag the release (VERSION=0.2.0)
+    requires:
+      vars: [VERSION]
+    env:
+      RELEASE_VERSION: "{{.VERSION}}"
+    cmds:
+      - |
+        set -e
+        tag="v${RELEASE_VERSION#v}"
+        go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
+        git-chglog --next-tag "$tag" -o CHANGELOG.md
+        git add CHANGELOG.md
+        git commit -m "Prepare $tag release"
+        git tag -a "$tag" -m "bterm $tag"
+
+  push-release:
+    desc: Atomically push the current branch and release tag (VERSION=0.2.0)
+    requires:
+      vars: [VERSION]
+    env:
+      RELEASE_VERSION: "{{.VERSION}}"
+    cmds:
+      - |
+        tag="v${RELEASE_VERSION#v}"
+        git push --atomic origin HEAD "$tag"
+
   hooks:
     desc: Install lefthook git hooks (installs lefthook)
     cmds:
