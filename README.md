@@ -154,7 +154,14 @@ printf '\033]52;c;SGVsbG8=\a'
 
 bterm implements the kitty keyboard protocol disambiguate mode, which allows terminal applications like Neovim to distinguish key combinations that legacy encoding cannot (e.g. `Ctrl+Shift+A` vs `Ctrl+A`, `Ctrl+Enter` vs `Enter`). The protocol is negotiated at runtime by the application — no configuration needed.
 
-To disable the kitty keyboard protocol, set `kittyEnabled` to `false` in `internal/terminal/vte/kitty.go` and rebuild. This is a compile-time constant, so there is no runtime cost when disabled.
+To disable the kitty keyboard protocol, build with the `nokitty` tag:
+
+```bash
+go build -tags nokitty -o bterm ./cmd/bterm
+# or: task build -- -tags nokitty
+```
+
+This is a compile-time switch, so there is no runtime cost when disabled.
 
 ---
 
