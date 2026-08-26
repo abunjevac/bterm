@@ -143,10 +143,13 @@ func parseNotificationOSC(content []byte) (terminal.Notification, bool) {
 		return note, true
 	}
 
-	parts = bytes.SplitN(content, []byte(";"), 3)
+	parts = bytes.SplitN(content, []byte(";"), 2)
 
-	if len(parts) >= 2 && string(parts[0]) == "9" && string(parts[1]) != "4" {
-		return terminal.Notification{Message: string(content[2:])}, true
+	// OSC 9;<message> is a simple notification. Exclude OSC 9;4;... which is
+	// the progress reporting protocol (iTerm2/ConEmu), not a notification.
+	// A bare "9;4" (no third part) is a notification with body "4".
+	if len(parts) >= 2 && string(parts[0]) == "9" && !bytes.HasPrefix(parts[1], []byte("4;")) {
+		return terminal.Notification{Message: string(parts[1])}, true
 	}
 
 	return terminal.Notification{}, false

@@ -31,6 +31,20 @@ func TestOSCParserStripsOSC9Notification(t *testing.T) {
 	require.Empty(t, result.clipboardText)
 }
 
+func TestOSCParserStripsOSC9NotificationWithShortBody(t *testing.T) {
+	t.Parallel()
+
+	var p oscParser
+
+	// A notification whose body is exactly "4" — must not be confused with
+	// the OSC 9;4 progress reporting protocol.
+	result := p.Filter([]byte("\x1b]9;4\x1b\\"))
+
+	require.Empty(t, result.out)
+	require.Equal(t, []terminal.Notification{{Message: "4"}}, result.notes)
+	require.Empty(t, result.clipboardText)
+}
+
 func TestOSCParserLeavesProgressAndUnknownOSC(t *testing.T) {
 	t.Parallel()
 
