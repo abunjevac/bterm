@@ -193,11 +193,12 @@ void vteSetColors(VteTerminal *terminal, const char *fg, const char *bg,
     parse_rgba(cursor, &curc);
 
     GdkRGBA pal[16];
-    for (int i = 0; i < paletteLen && i < 16; i++) {
+    int n = paletteLen < 16 ? paletteLen : 16;
+    for (int i = 0; i < n; i++) {
         parse_rgba(palette[i], &pal[i]);
     }
 
-    vte_terminal_set_colors(terminal, &fgc, &bgc, pal, paletteLen);
+    vte_terminal_set_colors(terminal, &fgc, &bgc, pal, n);
     vte_terminal_set_color_cursor(terminal, &curc);
 }
 
