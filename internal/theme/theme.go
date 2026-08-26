@@ -2,9 +2,14 @@ package theme
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/BurntSushi/toml"
 )
+
+// hexColorRe matches the color formats gdk_rgba_parse accepts:
+// #rgb, #rgba, #rrggbb, #rrggbbaa.
+var hexColorRe = regexp.MustCompile(`^#[0-9a-fA-F]{3,4}$|^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$`)
 
 // Palette is a full terminal color scheme. When UseSystemDefault is true, the
 // terminal keeps VTE's built-in palette and the host GTK theme (the "default" theme).
@@ -32,6 +37,18 @@ func Parse(data string) (*Palette, error) {
 
 	if len(p.Palette) != 16 {
 		return nil, fmt.Errorf("theme palette must have 16 colors, got %d", len(p.Palette))
+	}
+
+	for _, c := range []string{p.Foreground, p.Background, p.Cursor, p.Accent} {
+		if !hexColorRe.MatchString(c) {
+			return nil, fmt.Errorf("theme color %q is not a valid hex color (expected #rrggbb or #rrggbbaa)", c)
+		}
+	}
+
+	for i, c := range p.Palette {
+		if !hexColorRe.MatchString(c) {
+			return nil, fmt.Errorf("theme palette[%d] %q is not a valid hex color (expected #rrggbb or #rrggbbaa)", i, c)
+		}
 	}
 
 	return &p, nil

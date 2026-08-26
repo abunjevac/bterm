@@ -51,3 +51,51 @@ func TestDefaultThemeUsesSystem(t *testing.T) {
 
 	require.True(t, p.UseSystemDefault)
 }
+
+func TestParseRejectsInvalidHexColor(t *testing.T) {
+	t.Parallel()
+
+	_, err := theme.Parse(`foreground = "notacolor"` + "\n" +
+		`background = "#000000"` + "\n" +
+		`cursor = "#ffffff"` + "\n" +
+		`accent = "#ffffff"` + "\n" +
+		`palette = ["#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000"]`)
+	require.Error(t, err)
+	require.ErrorContains(t, err, "not a valid hex color")
+}
+
+func TestParseRejectsInvalidPaletteColor(t *testing.T) {
+	t.Parallel()
+
+	_, err := theme.Parse(`foreground = "#ffffff"` + "\n" +
+		`background = "#000000"` + "\n" +
+		`cursor = "#ffffff"` + "\n" +
+		`accent = "#ffffff"` + "\n" +
+		`palette = ["#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","nope"]`)
+	require.Error(t, err)
+	require.ErrorContains(t, err, "not a valid hex color")
+}
+
+func TestParseAcceptsShortHex(t *testing.T) {
+	t.Parallel()
+
+	p, err := theme.Parse(`foreground = "#fff"` + "\n" +
+		`background = "#000"` + "\n" +
+		`cursor = "#fff"` + "\n" +
+		`accent = "#fff"` + "\n" +
+		`palette = ["#000","#000","#000","#000","#000","#000","#000","#000","#000","#000","#000","#000","#000","#000","#000","#000"]`)
+	require.NoError(t, err)
+	require.Equal(t, "#fff", p.Foreground)
+}
+
+func TestParseAcceptsHexWithAlpha(t *testing.T) {
+	t.Parallel()
+
+	p, err := theme.Parse(`foreground = "#ffffff80"` + "\n" +
+		`background = "#000000ff"` + "\n" +
+		`cursor = "#ffffff"` + "\n" +
+		`accent = "#ffffff"` + "\n" +
+		`palette = ["#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000"]`)
+	require.NoError(t, err)
+	require.Equal(t, "#ffffff80", p.Foreground)
+}
