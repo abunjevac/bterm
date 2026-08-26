@@ -1,12 +1,12 @@
 # bterm
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white)](go.mod)
+[![Go Version](https://img.shields.io/badge/Go-1.27+-00ADD8?logo=go&logoColor=white)](go.mod)
 [![Platform](https://img.shields.io/badge/platform-Linux-lightgrey?logo=linux&logoColor=white)](https://github.com/abunjevac/bterm)
 [![Release](https://img.shields.io/github/v/release/abunjevac/bterm)](https://github.com/abunjevac/bterm/releases)
 [![Build](https://github.com/abunjevac/bterm/actions/workflows/build.yml/badge.svg)](https://github.com/abunjevac/bterm/actions/workflows/build.yml)
 
-An opinionated GTK4 terminal emulator with tabs and pane splitting. Built with Go, GTK4, and VTE.
+An opinionated GTK4 terminal emulator with tabs and pane splitting. Powered by Go, GTK4, and libvte.
 
 ---
 
@@ -18,7 +18,7 @@ An opinionated GTK4 terminal emulator with tabs and pane splitting. Built with G
 - **Font zoom** — adjust font size in the focused pane at runtime
 - **CWD inheritance** — new tabs and splits open in the working directory of the active pane
 - **Clipboard toasts** — brief overlay confirms copy and paste actions
-- **Theme system** — TOML palette files; ships with a Dracula-compatible default
+- **Theme system** — TOML palette files; ships with an ayu default and multiple built-in palettes
 - **Configurable applications** — open the focused terminal directory in an editor or file browser
 - **Configurable keybindings** — remap any action in `~/.config/bterm/keymap.toml`
 
@@ -29,7 +29,7 @@ An opinionated GTK4 terminal emulator with tabs and pane splitting. Built with G
 - Linux
 - GTK4 (`libgtk-4-dev`)
 - VTE GTK4 (`libvte-2.91-gtk4-dev`)
-- Go 1.26+
+- Go 1.27+
 - [Task](https://taskfile.dev) (optional, for `task` commands)
 
 Install system dependencies on Ubuntu/Debian:
@@ -115,7 +115,7 @@ Open `config.toml` from within bterm via **Open Config** in the hamburger menu o
 ```toml
 font           = "Monospace"
 font_size      = 12.0
-theme          = "dracula"
+theme          = "ayu"
 shell          = ""          # defaults to $SHELL
 shell_args     = ["-l"]
 scrollback     = 10000
