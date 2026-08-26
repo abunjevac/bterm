@@ -282,14 +282,26 @@ func clipboardHasText(clip *gdk.Clipboard) bool {
 
 // clearFocused clears the focused terminal's screen and scrollback.
 func (pa *paneArea) clearFocused() {
-	if t, ok := pa.focusedTerminal().(clearTerminal); ok {
+	ft := pa.focusedTerminal()
+
+	if ft == nil {
+		return
+	}
+
+	if t, ok := ft.(clearTerminal); ok {
 		t.Clear()
 	}
 }
 
 // resetFocused resets the focused terminal and clears scrollback.
 func (pa *paneArea) resetFocused() {
-	if t, ok := pa.focusedTerminal().(resetTerminal); ok {
+	ft := pa.focusedTerminal()
+
+	if ft == nil {
+		return
+	}
+
+	if t, ok := ft.(resetTerminal); ok {
 		t.Reset()
 	}
 }
