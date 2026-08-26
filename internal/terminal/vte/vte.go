@@ -412,11 +412,15 @@ func goVteChildExited(termID C.int, status C.int) {
 
 	t.closeProxy()
 
-	if t.onExit == nil {
-		return
+	if t.onExit != nil {
+		t.onExit(int(status))
 	}
 
-	t.onExit(int(status))
+	// child-exited is the last C callback that can fire for this terminal;
+	// remove it from the registry so closed terminals can be garbage-collected.
+	regMu.Lock()
+	delete(reg, int(termID))
+	regMu.Unlock()
 }
 
 //export goVteTitleChanged
