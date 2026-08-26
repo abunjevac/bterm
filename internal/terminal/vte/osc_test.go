@@ -8,6 +8,8 @@ import (
 )
 
 func TestOSCParserStrips777Notification(t *testing.T) {
+	t.Parallel()
+
 	var p oscParser
 
 	result := p.Filter([]byte("before\x1b]777;notify;Title;Message\x07after"))
@@ -18,6 +20,8 @@ func TestOSCParserStrips777Notification(t *testing.T) {
 }
 
 func TestOSCParserStripsOSC9Notification(t *testing.T) {
+	t.Parallel()
+
 	var p oscParser
 
 	result := p.Filter([]byte("\x1b]9;Build complete\x1b\\"))
@@ -28,6 +32,8 @@ func TestOSCParserStripsOSC9Notification(t *testing.T) {
 }
 
 func TestOSCParserLeavesProgressAndUnknownOSC(t *testing.T) {
+	t.Parallel()
+
 	var p oscParser
 
 	input := "\x1b]9;4;1;50\x07\x1b]0;title\x07"
@@ -39,6 +45,8 @@ func TestOSCParserLeavesProgressAndUnknownOSC(t *testing.T) {
 }
 
 func TestOSCParserHandlesSplitSequence(t *testing.T) {
+	t.Parallel()
+
 	var p oscParser
 
 	result := p.Filter([]byte("a\x1b]777;notify;Ti"))
@@ -51,6 +59,8 @@ func TestOSCParserHandlesSplitSequence(t *testing.T) {
 }
 
 func TestOSCParserDecodesClipboardCopy(t *testing.T) {
+	t.Parallel()
+
 	var p oscParser
 
 	// OSC 52 with base64 "Hello" — should be stripped and decoded.
@@ -62,6 +72,8 @@ func TestOSCParserDecodesClipboardCopy(t *testing.T) {
 }
 
 func TestOSCParserDecodesClipboardCopyWithSTTerminator(t *testing.T) {
+	t.Parallel()
+
 	var p oscParser
 
 	result := p.Filter([]byte("\x1b]52;c;SGVsbG8=\x1b\\"))
@@ -70,6 +82,8 @@ func TestOSCParserDecodesClipboardCopyWithSTTerminator(t *testing.T) {
 }
 
 func TestOSCParserIgnoresClipboardQuery(t *testing.T) {
+	t.Parallel()
+
 	var p oscParser
 
 	// OSC 52 with "?" — a query, not a copy. Should pass through.

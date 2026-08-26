@@ -8,6 +8,8 @@ import (
 )
 
 func TestSingleLeafTree(t *testing.T) {
+	t.Parallel()
+
 	tr := panetree.New(1)
 
 	require.Equal(t, []int{1}, tr.Leaves())
@@ -15,6 +17,8 @@ func TestSingleLeafTree(t *testing.T) {
 }
 
 func TestSplitCreatesSibling(t *testing.T) {
+	t.Parallel()
+
 	tr := panetree.New(1)
 
 	tr.Split(panetree.LeftRight, 2)
@@ -24,6 +28,8 @@ func TestSplitCreatesSibling(t *testing.T) {
 }
 
 func TestCloseCollapsesToSibling(t *testing.T) {
+	t.Parallel()
+
 	tr := panetree.New(1)
 
 	tr.Split(panetree.LeftRight, 2)
@@ -34,6 +40,8 @@ func TestCloseCollapsesToSibling(t *testing.T) {
 }
 
 func TestCloseLastLeafEmptiesTree(t *testing.T) {
+	t.Parallel()
+
 	tr := panetree.New(1)
 
 	tr.Close(1)
@@ -43,6 +51,8 @@ func TestCloseLastLeafEmptiesTree(t *testing.T) {
 }
 
 func TestFocusNeighborDirectional(t *testing.T) {
+	t.Parallel()
+
 	tr := panetree.New(1)
 
 	tr.Split(panetree.LeftRight, 2) // 1 | 2, focus=2
@@ -56,6 +66,8 @@ func TestFocusNeighborDirectional(t *testing.T) {
 }
 
 func TestNestedSplitNeighbor(t *testing.T) {
+	t.Parallel()
+
 	tr := panetree.New(1)
 
 	tr.Split(panetree.LeftRight, 2) // 1 | 2, focus=2
@@ -69,6 +81,8 @@ func TestNestedSplitNeighbor(t *testing.T) {
 }
 
 func TestNeighborAfterClose(t *testing.T) {
+	t.Parallel()
+
 	tr := panetree.New(1)
 
 	tr.Split(panetree.LeftRight, 2) // 1 | 2, focus=2
@@ -82,6 +96,8 @@ func TestNeighborAfterClose(t *testing.T) {
 }
 
 func TestNeighborAfterCloseNested(t *testing.T) {
+	t.Parallel()
+
 	tr := panetree.New(1)
 
 	tr.Split(panetree.LeftRight, 2) // 1 | 2, focus=2
@@ -95,6 +111,8 @@ func TestNeighborAfterCloseNested(t *testing.T) {
 }
 
 func TestCloseMiddleNodeFocusesRemaining(t *testing.T) {
+	t.Parallel()
+
 	tr := panetree.New(1)
 
 	tr.Split(panetree.LeftRight, 2)

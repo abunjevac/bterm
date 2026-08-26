@@ -7,10 +7,14 @@ import (
 )
 
 func TestExpandCWDArgs(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, []string{"--folder=/tmp/project", "/tmp/project"}, expandCWDArgs([]string{"--folder={cwd}", "{cwd}"}, "/tmp/project"))
 }
 
 func TestNotificationDBusArgsSetsBtermIdentity(t *testing.T) {
+	t.Parallel()
+
 	args := notificationDBusArgs("Title", "Message")
 
 	require.Equal(t, []string{
@@ -31,5 +35,7 @@ func TestNotificationDBusArgsSetsBtermIdentity(t *testing.T) {
 }
 
 func TestGVariantStringEscapesValues(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, `'can\'t \\ stop'`, gvariantString(`can't \ stop`))
 }

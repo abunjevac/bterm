@@ -1,6 +1,6 @@
 version: "2"
 run:
-  tests: false
+  tests: true
 linters:
   default: all
   enable:
@@ -23,6 +23,7 @@ linters:
     - perfsprint
     - tagalign
     - varnamelen
+    - testpackage
   settings:
     exhaustive:
       default-signifies-exhaustive: true

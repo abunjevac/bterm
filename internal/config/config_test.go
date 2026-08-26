@@ -14,6 +14,8 @@ import (
 var testConfig string
 
 func TestParseAppliesDefaults(t *testing.T) {
+	t.Parallel()
+
 	cfg, err := config.Parse("")
 	require.NoError(t, err)
 
@@ -31,6 +33,8 @@ func TestParseAppliesDefaults(t *testing.T) {
 }
 
 func TestParseOverrides(t *testing.T) {
+	t.Parallel()
+
 	cfg, err := config.Parse(testConfig)
 	require.NoError(t, err)
 
@@ -44,21 +48,29 @@ func TestParseOverrides(t *testing.T) {
 }
 
 func TestParseRejectsUnknownKeys(t *testing.T) {
+	t.Parallel()
+
 	_, err := config.Parse(`notakey = true`)
 	require.ErrorContains(t, err, "notakey")
 }
 
 func TestParseRejectsInvalidTerminalNotificationMethod(t *testing.T) {
+	t.Parallel()
+
 	_, err := config.Parse(`terminal_notification_method = "notify-send"`)
 	require.ErrorContains(t, err, "invalid terminal_notification_method")
 }
 
 func TestParseRejectsOldTerminalNotificationsKey(t *testing.T) {
+	t.Parallel()
+
 	_, err := config.Parse(`terminal_notifications = false`)
 	require.ErrorContains(t, err, "terminal_notifications")
 }
 
 func TestSaveRoundTrip(t *testing.T) {
+	t.Parallel()
+
 	dir := t.TempDir()
 
 	cfg, err := config.Parse(`font = "Fira Code"`)

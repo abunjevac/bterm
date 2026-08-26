@@ -8,13 +8,19 @@ import (
 )
 
 func TestInferShellPrefersConfig(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, "/bin/fish", config.InferShell("/bin/fish", "/bin/bash"))
 }
 
 func TestInferShellFallsBackToEnv(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, "/bin/bash", config.InferShell("", "/bin/bash"))
 }
 
 func TestInferShellDefaultsToZsh(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, "/bin/zsh", config.InferShell("", ""))
 }

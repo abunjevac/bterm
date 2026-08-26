@@ -15,6 +15,8 @@ var validPaletteTOML string
 var shortPaletteTOML string
 
 func TestBuiltinsLoad(t *testing.T) {
+	t.Parallel()
+
 	names := theme.BuiltinNames()
 
 	require.ElementsMatch(t,
@@ -23,6 +25,8 @@ func TestBuiltinsLoad(t *testing.T) {
 }
 
 func TestParsePalette(t *testing.T) {
+	t.Parallel()
+
 	p, err := theme.Parse(validPaletteTOML)
 	require.NoError(t, err)
 
@@ -32,12 +36,16 @@ func TestParsePalette(t *testing.T) {
 }
 
 func TestParseRejectsWrongPaletteLength(t *testing.T) {
+	t.Parallel()
+
 	_, err := theme.Parse(shortPaletteTOML)
 	require.Error(t, err)
 	require.ErrorContains(t, err, "16")
 }
 
 func TestDefaultThemeUsesSystem(t *testing.T) {
+	t.Parallel()
+
 	p, err := theme.Builtin("default")
 	require.NoError(t, err)
 

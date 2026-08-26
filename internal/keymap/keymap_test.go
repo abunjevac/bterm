@@ -15,14 +15,18 @@ var validKeymapTOML string
 //go:embed testdata/conflict_keymap.toml
 var conflictKeymapTOML string
 
+const canonicalCtrlShiftO = "ctrl+shift+o"
+
 func TestNormalize(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		input string
 		want  string
 	}{
-		{"Ctrl+Shift+O", "ctrl+shift+o"},
-		{"ctrl+shift+o", "ctrl+shift+o"},
-		{"Shift+Ctrl+O", "ctrl+shift+o"}, // canonical modifier order
+		{"Ctrl+Shift+O", canonicalCtrlShiftO},
+		{"ctrl+shift+o", canonicalCtrlShiftO},
+		{"Shift+Ctrl+O", canonicalCtrlShiftO}, // canonical modifier order
 		{"ALT+LEFT", "alt+left"},
 		{"Return", "return"},
 		{"Escape", "escape"},
@@ -32,6 +36,8 @@ func TestNormalize(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := keymap.Normalize(tc.input)
 			require.NoError(t, err)
 
@@ -41,6 +47,8 @@ func TestNormalize(t *testing.T) {
 }
 
 func TestNormalizeErrors(t *testing.T) {
+	t.Parallel()
+
 	_, err := keymap.Normalize("")
 	require.Error(t, err)
 
@@ -50,6 +58,8 @@ func TestNormalizeErrors(t *testing.T) {
 }
 
 func TestParseAndLookup(t *testing.T) {
+	t.Parallel()
+
 	layout, err := keymap.Parse(validKeymapTOML)
 	require.NoError(t, err)
 
@@ -64,6 +74,8 @@ func TestParseAndLookup(t *testing.T) {
 }
 
 func TestConflicts(t *testing.T) {
+	t.Parallel()
+
 	layout, err := keymap.Parse(conflictKeymapTOML)
 	require.NoError(t, err)
 
@@ -73,6 +85,8 @@ func TestConflicts(t *testing.T) {
 }
 
 func TestDefaultLayout(t *testing.T) {
+	t.Parallel()
+
 	layout := keymap.Default()
 
 	require.Equal(t, keymap.ActionSplitLeftRight, layout.Lookup("ctrl+shift+o"))
@@ -97,11 +111,15 @@ func TestDefaultLayout(t *testing.T) {
 }
 
 func TestSendNewlineActionName(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, "send_newline", keymap.ActionSendNewline.String())
 	require.Equal(t, "send_newline_plain", keymap.ActionSendNewlinePlain.String())
 }
 
 func TestDefaultLayoutNoConflicts(t *testing.T) {
+	t.Parallel()
+
 	layout := keymap.Default()
 
 	require.Empty(t, layout.Conflicts())

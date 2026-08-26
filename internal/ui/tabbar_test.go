@@ -9,6 +9,8 @@ import (
 )
 
 func TestHeaderActionTooltipIncludesConfiguredShortcut(t *testing.T) {
+	t.Parallel()
+
 	keys := keymap.Default()
 
 	require.Equal(t, "Split left/right (Ctrl+Shift+O)", headerActionTooltip(keys, keymap.ActionSplitLeftRight, "Split left/right"))

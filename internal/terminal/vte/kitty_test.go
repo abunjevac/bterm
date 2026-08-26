@@ -3,6 +3,8 @@ package vte
 import "testing"
 
 func TestKittyParserSetFlagsReplace(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	p.Filter([]byte("\x1b[=1;1u"))
@@ -13,6 +15,8 @@ func TestKittyParserSetFlagsReplace(t *testing.T) {
 }
 
 func TestKittyParserSetFlagsUnion(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	p.Filter([]byte("\x1b[=1;1u"))
@@ -24,6 +28,8 @@ func TestKittyParserSetFlagsUnion(t *testing.T) {
 }
 
 func TestKittyParserSetFlagsSubtract(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	p.Filter([]byte("\x1b[=3;1u"))
@@ -35,6 +41,8 @@ func TestKittyParserSetFlagsSubtract(t *testing.T) {
 }
 
 func TestKittyParserQueryResponse(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	p.Filter([]byte("\x1b[=1;1u"))
@@ -46,6 +54,8 @@ func TestKittyParserQueryResponse(t *testing.T) {
 }
 
 func TestKittyParserResponseDoesNotLoop(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	// A response sequence (CSI ? <flags> u) should be stripped without
@@ -62,6 +72,8 @@ func TestKittyParserResponseDoesNotLoop(t *testing.T) {
 }
 
 func TestKittyParserPushPop(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	p.Filter([]byte("\x1b[=1;1u"))
@@ -79,6 +91,8 @@ func TestKittyParserPushPop(t *testing.T) {
 }
 
 func TestKittyParserStripsSequences(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	result := p.Filter([]byte("before\x1b[=1;1uafter"))
@@ -89,6 +103,8 @@ func TestKittyParserStripsSequences(t *testing.T) {
 }
 
 func TestKittyParserPassesThroughNonKittyCSI(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	// Regular CSI sequence (cursor forward) should pass through.
@@ -101,6 +117,8 @@ func TestKittyParserPassesThroughNonKittyCSI(t *testing.T) {
 }
 
 func TestKittyParserPassesThroughCSIUWithoutPrefix(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	// CSI u without kitty prefix should pass through (not a kitty sequence).
@@ -113,6 +131,8 @@ func TestKittyParserPassesThroughCSIUWithoutPrefix(t *testing.T) {
 }
 
 func TestKittyParserHandlesSplitSequence(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	result := p.Filter([]byte("a\x1b[=1;1"))
@@ -131,6 +151,8 @@ func TestKittyParserHandlesSplitSequence(t *testing.T) {
 }
 
 func TestKittyParserMultipleSequences(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	result := p.Filter([]byte("\x1b[=1;1u\x1b[?u"))
@@ -149,6 +171,8 @@ func TestKittyParserMultipleSequences(t *testing.T) {
 }
 
 func TestKittyParserDefaultModeIsReplace(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	// Without explicit mode, default is 1 (replace).
@@ -161,6 +185,8 @@ func TestKittyParserDefaultModeIsReplace(t *testing.T) {
 }
 
 func TestKittyParserPopDefaultCount(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	p.Filter([]byte("\x1b[=1;1u"))
@@ -176,6 +202,8 @@ func TestKittyParserPopDefaultCount(t *testing.T) {
 }
 
 func TestKittyParserPassesThroughDECPrivateModes(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	// DEC private mode sequences use CSI ? prefix but end with h/l,
@@ -200,6 +228,8 @@ func TestKittyParserPassesThroughDECPrivateModes(t *testing.T) {
 }
 
 func TestKittyParserPassesThroughSGRMouse(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	// SGR mouse events use CSI < prefix but end with M/m, not u.
@@ -212,6 +242,8 @@ func TestKittyParserPassesThroughSGRMouse(t *testing.T) {
 }
 
 func TestKittyParserPassesThroughXtermModifiers(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	// xterm modifier reports use CSI > prefix but end with c, not u.
@@ -224,6 +256,8 @@ func TestKittyParserPassesThroughXtermModifiers(t *testing.T) {
 }
 
 func TestKittyParserPassesThroughMixedContent(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	// Regular output + DEC private mode + kitty negotiation + more output.
@@ -241,6 +275,8 @@ func TestKittyParserPassesThroughMixedContent(t *testing.T) {
 }
 
 func TestKittyParserPassesThroughSGRColors(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	// SGR color sequences (CSI ... m) must pass through intact.
@@ -261,6 +297,8 @@ func TestKittyParserPassesThroughSGRColors(t *testing.T) {
 }
 
 func TestKittyParserPassesThroughCursorMovement(t *testing.T) {
+	t.Parallel()
+
 	var p kittyParser
 
 	// Cursor movement sequences must pass through intact.

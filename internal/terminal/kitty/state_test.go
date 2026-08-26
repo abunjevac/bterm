@@ -3,6 +3,8 @@ package kitty
 import "testing"
 
 func TestStateDefaultsToZero(t *testing.T) {
+	t.Parallel()
+
 	var s State
 
 	if s.Flags() != 0 {
@@ -15,6 +17,8 @@ func TestStateDefaultsToZero(t *testing.T) {
 }
 
 func TestStateSetReplace(t *testing.T) {
+	t.Parallel()
+
 	var s State
 
 	s.Set(FlagDisambiguate|FlagReportEvents, 1)
@@ -25,6 +29,8 @@ func TestStateSetReplace(t *testing.T) {
 }
 
 func TestStateSetUnion(t *testing.T) {
+	t.Parallel()
+
 	s := State{flags: FlagDisambiguate}
 
 	s.Set(FlagReportEvents, 2)
@@ -35,6 +41,8 @@ func TestStateSetUnion(t *testing.T) {
 }
 
 func TestStateSetSubtract(t *testing.T) {
+	t.Parallel()
+
 	s := State{flags: FlagDisambiguate | FlagReportEvents}
 
 	s.Set(FlagDisambiguate, 3)
@@ -45,6 +53,8 @@ func TestStateSetSubtract(t *testing.T) {
 }
 
 func TestStatePushPop(t *testing.T) {
+	t.Parallel()
+
 	var s State
 
 	s.Set(FlagDisambiguate, 1)
@@ -62,6 +72,8 @@ func TestStatePushPop(t *testing.T) {
 }
 
 func TestStatePushZeroClearsFlags(t *testing.T) {
+	t.Parallel()
+
 	s := State{flags: FlagDisambiguate}
 
 	s.Push(0)
@@ -72,6 +84,8 @@ func TestStatePushZeroClearsFlags(t *testing.T) {
 }
 
 func TestStatePopEmptyStackResets(t *testing.T) {
+	t.Parallel()
+
 	var s State
 
 	s.Pop(1)
@@ -82,6 +96,8 @@ func TestStatePopEmptyStackResets(t *testing.T) {
 }
 
 func TestStatePopMultiple(t *testing.T) {
+	t.Parallel()
+
 	var s State
 
 	s.Set(1, 1)
@@ -97,6 +113,8 @@ func TestStatePopMultiple(t *testing.T) {
 }
 
 func TestStatePopMoreThanStack(t *testing.T) {
+	t.Parallel()
+
 	var s State
 
 	s.Set(1, 1)
@@ -111,6 +129,8 @@ func TestStatePopMoreThanStack(t *testing.T) {
 }
 
 func TestStateQueryResponse(t *testing.T) {
+	t.Parallel()
+
 	s := State{flags: FlagDisambiguate}
 
 	if got := s.QueryResponse(); got != "\x1b[?1u" {
@@ -119,9 +139,11 @@ func TestStateQueryResponse(t *testing.T) {
 }
 
 func TestStateStackDepthLimit(t *testing.T) {
+	t.Parallel()
+
 	var s State
 
-	for i := 0; i < maxStackDepth+10; i++ {
+	for i := range maxStackDepth + 10 {
 		s.Push(i)
 	}
 
