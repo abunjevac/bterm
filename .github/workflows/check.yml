@@ -24,11 +24,14 @@ jobs:
             libvte-2.91-gtk4-dev \
             libgirepository1.0-dev
 
+      - name: Pre-build (warm cgo cache)
+        run: go build ./...
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
           version: v2.13.1
-          args: --allow-parallel-runners --timeout 5m
+          args: --allow-parallel-runners --timeout 10m
 
       - name: go vet
         run: go vet ./...
