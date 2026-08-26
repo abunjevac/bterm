@@ -14,7 +14,8 @@ import (
 )
 
 // Run starts the GTK application and blocks until the window closes.
-func Run(ctx context.Context, bundle *config.Bundle, workingDir string) {
+// Returns the GTK exit code. The caller is responsible for calling os.Exit.
+func Run(ctx context.Context, bundle *config.Bundle, workingDir string) int {
 	_ = ctx
 
 	iconResource, err := gio.NewResourceFromData(glib.NewBytes(assets.IconsGResource))
@@ -32,5 +33,5 @@ func Run(ctx context.Context, bundle *config.Bundle, workingDir string) {
 		w.Present()
 	})
 
-	os.Exit(app.Run(os.Args[:1]))
+	return app.Run(os.Args[:1])
 }

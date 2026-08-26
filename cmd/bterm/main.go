@@ -71,9 +71,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	ui.Run(ctx, bundle, cmd.String("working-directory"))
-
-	return nil
+	return cli.Exit("", ui.Run(ctx, bundle, cmd.String("working-directory")))
 }
 
 func keymapCommand(ctx context.Context, cmd *cli.Command) error {
