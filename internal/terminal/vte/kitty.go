@@ -22,6 +22,7 @@ const maxPendingKitty = 256
 type kittyParser struct {
 	state   kitty.State
 	pending []byte
+	out     []byte
 }
 
 // kittyResult holds the output of filtering kitty negotiation sequences.
@@ -40,14 +41,14 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 
 	data = prependPending(&p.pending, data)
 
-	out := make([]byte, 0, len(data))
+	p.out = p.out[:0]
 	response := []byte{}
 
 	for len(data) > 0 {
 		idx := bytes.Index(data, []byte{0x1b, '['})
 
 		if idx < 0 {
-			out = append(out, data...)
+			p.out = append(p.out, data...)
 
 			break
 		}
@@ -66,13 +67,13 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 		if finalOff < 0 {
 			if len(data[idx:]) > maxPendingKitty {
 				// too long — not a valid CSI, pass ESC [ through
-				out = append(out, data[idx], data[idx+1])
+				p.out = append(p.out, data[idx], data[idx+1])
 				data = data[idx+2:]
 
 				continue
 			}
 
-			out = append(out, data[:idx]...)
+			p.out = append(p.out, data[:idx]...)
 			p.pending = append(p.pending, data[idx:]...)
 
 			break
@@ -84,13 +85,13 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 		prefix := data[idx+2]
 
 		if !isKittyCSIPrefix(prefix) || data[finalOff] != 'u' {
-			out = append(out, data[:finalOff+1]...)
+			p.out = append(p.out, data[:finalOff+1]...)
 			data = data[finalOff+1:]
 
 			continue
 		}
 
-		out = append(out, data[:idx]...)
+		p.out = append(p.out, data[:idx]...)
 
 		content := data[idx+3 : finalOff]
 
@@ -98,7 +99,7 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 		data = data[finalOff+1:]
 	}
 
-	return kittyResult{out: out, response: response}
+	return kittyResult{out: p.out, response: response}
 }
 
 // findCSIFinal returns the offset of the CSI final byte (0x40-0x7e)

@@ -11,6 +11,7 @@ const maxPendingOSC = 64 * 1024
 
 type oscParser struct {
 	pending []byte
+	out     []byte
 }
 
 // oscResult holds the output of filtering a chunk of terminal data.
@@ -23,7 +24,7 @@ type oscResult struct {
 func (p *oscParser) Filter(data []byte) oscResult {
 	data = prependPending(&p.pending, data)
 
-	out := make([]byte, 0, len(data))
+	p.out = p.out[:0]
 	notes := make([]terminal.Notification, 0)
 	clipboardText := ""
 
@@ -31,12 +32,12 @@ func (p *oscParser) Filter(data []byte) oscResult {
 		idx := bytes.Index(data, []byte{0x1b, ']'})
 
 		if idx < 0 {
-			out = append(out, data...)
+			p.out = append(p.out, data...)
 
 			break
 		}
 
-		out = append(out, data[:idx]...)
+		p.out = append(p.out, data[:idx]...)
 
 		data = data[idx:]
 
@@ -44,7 +45,7 @@ func (p *oscParser) Filter(data []byte) oscResult {
 
 		if end < 0 {
 			if len(data) > maxPendingOSC {
-				out = append(out, data[0])
+				p.out = append(p.out, data[0])
 
 				data = data[1:]
 
@@ -70,13 +71,13 @@ func (p *oscParser) Filter(data []byte) oscResult {
 		}
 
 		if keep {
-			out = append(out, data[:seqEnd]...)
+			p.out = append(p.out, data[:seqEnd]...)
 		}
 
 		data = data[seqEnd:]
 	}
 
-	return oscResult{out: out, notes: notes, clipboardText: clipboardText}
+	return oscResult{out: p.out, notes: notes, clipboardText: clipboardText}
 }
 
 // prependPending merges any buffered partial data with new data, clearing the buffer.
