@@ -85,12 +85,23 @@ func newEmptyWindow(app *gtk.Application, bundle *config.Bundle, workingDir stri
 
 // spawnTerm configures and spawns a shell in t. An empty workingDir defaults to $HOME.
 func (w *window) spawnTerm(t terminal.Terminal, workingDir string) {
-	cfg := w.bundle.Config
-	shell := config.InferShell(cfg.Shell, os.Getenv("SHELL"))
-
 	if workingDir == "" {
 		workingDir, _ = os.UserHomeDir()
 	}
+
+	w.configureAndSpawn(t, workingDir)
+
+	if len(w.tabs) == 0 {
+		t.SetSize(w.bundle.Config.WindowColumns, w.bundle.Config.WindowRows)
+	}
+}
+
+// configureAndSpawn applies font, colors, scrollback, scrollbar, notification
+// and clipboard callbacks, then spawns the shell. Shared by spawnTerm and
+// paneArea.spawnInTerm.
+func (w *window) configureAndSpawn(t terminal.Terminal, workingDir string) {
+	cfg := w.bundle.Config
+	shell := config.InferShell(cfg.Shell, os.Getenv("SHELL"))
 
 	t.SetFont(w.fontFamily, w.fontSize)
 	t.SetColors(w.palette)
@@ -99,10 +110,6 @@ func (w *window) spawnTerm(t terminal.Terminal, workingDir string) {
 
 	w.installTerminalNotifications(t)
 	w.installClipboardDetection(t)
-
-	if len(w.tabs) == 0 {
-		t.SetSize(cfg.WindowColumns, cfg.WindowRows)
-	}
 
 	t.Spawn(workingDir, shell, shellArgs(cfg), func(_ int, _ error) {})
 }

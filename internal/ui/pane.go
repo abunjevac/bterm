@@ -6,7 +6,6 @@ import (
 	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
-	"github.com/abunjevac/bterm/internal/config"
 	"github.com/abunjevac/bterm/internal/terminal"
 	"github.com/abunjevac/bterm/internal/ui/panetree"
 )
@@ -91,18 +90,7 @@ func (pa *paneArea) registerTerm(id int, t terminal.Terminal) {
 
 // spawnInTerm configures and spawns a shell in t, using workingDir as the cwd.
 func (pa *paneArea) spawnInTerm(t terminal.Terminal, workingDir string) {
-	cfg := pa.win.bundle.Config
-	shell := config.InferShell(cfg.Shell, os.Getenv("SHELL"))
-
-	t.SetFont(pa.win.fontFamily, pa.win.fontSize)
-	t.SetColors(pa.win.palette)
-	t.SetScrollback(cfg.Scrollback)
-	t.SetScrollbar(cfg.ShowScrollbar)
-
-	pa.win.installTerminalNotifications(t)
-	pa.win.installClipboardDetection(t)
-
-	t.Spawn(workingDir, shell, shellArgs(cfg), func(_ int, _ error) {})
+	pa.win.configureAndSpawn(t, workingDir)
 }
 
 // split splits the focused pane with a new terminal inheriting the focused pane's cwd.
