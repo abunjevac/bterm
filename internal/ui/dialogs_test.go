@@ -17,5 +17,5 @@ func TestDialogSpecs(t *testing.T) {
 func TestAboutCopyright(t *testing.T) {
 	t.Parallel()
 
-	require.Equal(t, "© 2026 exobyte.org", aboutCopyright)
+	require.Equal(t, "© 2026 Alan Bunjevac", aboutCopyright)
 }

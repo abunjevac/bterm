@@ -12,7 +12,7 @@ import (
 	"github.com/abunjevac/bterm/internal/version"
 )
 
-const aboutCopyright = "© 2026 exobyte.org"
+const aboutCopyright = "© 2026 Alan Bunjevac"
 
 //nolint:funlen // keeps the complete About dialog layout together.
 func showAboutDialog(parent *gtk.ApplicationWindow) {
