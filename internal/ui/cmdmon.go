@@ -101,6 +101,7 @@ func (m *cmdMonitor) poll(key commandKey, term terminal.Terminal, now time.Time)
 
 	if state == nil {
 		state = &commandState{}
+
 		m.states[key] = state
 	}
 

@@ -63,6 +63,7 @@ func (w *window) handleTerminalNotification(n terminal.Notification) {
 
 	if message == "" {
 		message = title
+
 		title = cfg.Title
 	}
 

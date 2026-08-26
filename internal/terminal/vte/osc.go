@@ -25,6 +25,7 @@ func (p *oscParser) Filter(data []byte) oscResult {
 	data = prependPending(&p.pending, data)
 
 	p.out = p.out[:0]
+
 	notes := make([]terminal.Notification, 0)
 	clipboardText := ""
 

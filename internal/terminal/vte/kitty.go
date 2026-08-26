@@ -34,7 +34,7 @@ type kittyResult struct {
 // Filter removes kitty keyboard protocol negotiation sequences from data.
 // It updates the internal state and prepares responses for query sequences.
 // When kittyEnabled is false, data passes through unchanged.
-func (p *kittyParser) Filter(data []byte) kittyResult {
+func (p *kittyParser) Filter(data []byte) kittyResult { //nolint:funlen
 	if !kittyEnabled {
 		return kittyResult{out: data}
 	}
@@ -42,6 +42,7 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 	data = prependPending(&p.pending, data)
 
 	p.out = p.out[:0]
+
 	response := []byte{}
 
 	for len(data) > 0 {
@@ -68,6 +69,7 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 			if len(data[idx:]) > maxPendingKitty {
 				// too long — not a valid CSI, pass ESC [ through
 				p.out = append(p.out, data[idx], data[idx+1])
+
 				data = data[idx+2:]
 
 				continue
@@ -86,6 +88,7 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 
 		if !isKittyCSIPrefix(prefix) || data[finalOff] != 'u' {
 			p.out = append(p.out, data[:finalOff+1]...)
+
 			data = data[finalOff+1:]
 
 			continue
@@ -96,6 +99,7 @@ func (p *kittyParser) Filter(data []byte) kittyResult {
 		content := data[idx+3 : finalOff]
 
 		response = append(response, p.handleKittyCSI(prefix, content)...)
+
 		data = data[finalOff+1:]
 	}
 

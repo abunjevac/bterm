@@ -193,6 +193,7 @@ func contextSubmenuAction(w *window, root, submenu *gtk.Popover, entry contextMe
 	gesture.SetButton(0)
 	gesture.ConnectReleased(func(_ int, _, _ float64) {
 		submenu.Popdown()
+
 		root.Popdown()
 
 		w.dispatch(entry.action)

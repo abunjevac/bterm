@@ -65,6 +65,7 @@ func readRSS() uint64 {
 		}
 
 		fields := strings.Fields(line)
+
 		if len(fields) < 2 {
 			return 0
 		}

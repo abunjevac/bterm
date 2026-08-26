@@ -462,7 +462,9 @@ func goVteChildExited(termID C.int, status C.int) {
 	// child-exited is the last C callback that can fire for this terminal;
 	// remove it from the registry so closed terminals can be garbage-collected.
 	regMu.Lock()
+
 	delete(reg, int(termID))
+
 	regMu.Unlock()
 }
 
