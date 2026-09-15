@@ -33,9 +33,11 @@ func TestAdvanceCommandStatePreservesDurationAcrossPolling(t *testing.T) {
 	require.Equal(t, 1234*time.Millisecond, state.lastDuration)
 }
 
-func TestFormatCmdDurationRoundsToMilliseconds(t *testing.T) {
+func TestFormatCmdDuration(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, "1.235s", formatCmdDuration(1234567890*time.Nanosecond))
-	require.Equal(t, "1m2.346s", formatCmdDuration(time.Minute+2345678900*time.Nanosecond))
+	require.Equal(t, "01:02", formatCmdDuration(time.Minute+2345678900*time.Nanosecond))
+	require.Equal(t, "01:00", formatCmdDuration(time.Minute))
+	require.Equal(t, "59.999s", formatCmdDuration(time.Minute-time.Millisecond))
 }

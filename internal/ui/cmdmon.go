@@ -160,10 +160,16 @@ func advanceCommandState(state *commandState, running bool, now time.Time) {
 }
 
 // formatCmdDuration renders a duration like Go's Duration.String() but rounded
-// to millisecond precision to avoid excessive decimal places.
+// to millisecond precision to avoid excessive decimal places. Durations of at
+// least one minute drop the fraction and reuse the session uptime format, since
+// sub-second precision is meaningless for long-running commands.
 func formatCmdDuration(d time.Duration) string {
 	if d <= 0 {
 		return "0s"
+	}
+
+	if d >= time.Minute {
+		return formatUptime(d)
 	}
 
 	return d.Round(time.Millisecond).String()
