@@ -25,6 +25,7 @@ type Terminal interface {
 	SetColors(p *theme.Palette)
 	SetScrollback(lines int)
 	SetScrollbar(visible bool)
+	SetDetectHyperlinks(enable bool)
 	SetSize(columns, rows int)
 	CurrentDir() string
 	Copy()
@@ -33,6 +34,7 @@ type Terminal interface {
 	OnTitleChanged(fn func(title string))
 	OnNotification(fn func(title, message string))
 	OnClipboardCopy(fn func(text string))
+	OnOpenLink(fn func(uri string))
 	OnChildExited(fn func(status int))
 	ShellPID() int
 	ForegroundPGID() (int, error)

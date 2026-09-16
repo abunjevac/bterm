@@ -112,9 +112,12 @@ func (w *window) configureAndSpawn(t terminal.Terminal, workingDir string) {
 	t.SetColors(w.palette)
 	t.SetScrollback(cfg.Scrollback)
 	t.SetScrollbar(cfg.ShowScrollbar)
+	t.SetDetectHyperlinks(cfg.DetectHyperlinks)
 
 	w.installTerminalNotifications(t)
 	w.installClipboardDetection(t)
+
+	t.OnOpenLink(w.openLink)
 
 	t.Spawn(workingDir, shell, shellArgs(cfg), func(_ int, _ error) {})
 }
@@ -163,6 +166,10 @@ func (w *window) applyNewConfig(old, next config.Config) { //nolint:cyclop // li
 
 			if next.Scrollback != old.Scrollback {
 				t.SetScrollback(next.Scrollback)
+			}
+
+			if next.DetectHyperlinks != old.DetectHyperlinks {
+				t.SetDetectHyperlinks(next.DetectHyperlinks)
 			}
 		}
 	}

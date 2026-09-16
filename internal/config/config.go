@@ -27,6 +27,7 @@ type Config struct {
 	Scrollback                 int      `toml:"scrollback"`
 	ShowScrollbar              bool     `toml:"show_scrollbar"`
 	ShowTimers                 bool     `toml:"show_timers"`
+	DetectHyperlinks           bool     `toml:"detect_hyperlinks"`
 	WindowColumns              int      `toml:"window_columns"`
 	WindowRows                 int      `toml:"window_rows"`
 	Title                      string   `toml:"title"`
@@ -60,6 +61,10 @@ func Parse(data string) (*Config, error) {
 
 	if !meta.IsDefined("show_timers") {
 		cfg.ShowTimers = true
+	}
+
+	if !meta.IsDefined("detect_hyperlinks") {
+		cfg.DetectHyperlinks = true
 	}
 
 	if err := validateTerminalNotificationMethod(cfg.TerminalNotificationMethod); err != nil {

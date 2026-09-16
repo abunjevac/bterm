@@ -24,6 +24,7 @@ func TestParseAppliesDefaults(t *testing.T) {
 	require.Equal(t, "ayu", cfg.Theme)
 	require.Equal(t, 5000, cfg.Scrollback)
 	require.True(t, cfg.ShowTimers)
+	require.True(t, cfg.DetectHyperlinks)
 	require.Equal(t, 180, cfg.WindowColumns)
 	require.Equal(t, 40, cfg.WindowRows)
 	require.Equal(t, "dbus", cfg.TerminalNotificationMethod)
@@ -55,6 +56,15 @@ func TestParseAllowsTimersToBeDisabled(t *testing.T) {
 	require.NoError(t, err)
 
 	require.False(t, cfg.ShowTimers)
+}
+
+func TestParseAllowsHyperlinksToBeDisabled(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := config.Parse(`detect_hyperlinks = false`)
+	require.NoError(t, err)
+
+	require.False(t, cfg.DetectHyperlinks)
 }
 
 func TestParseRejectsUnknownKeys(t *testing.T) {

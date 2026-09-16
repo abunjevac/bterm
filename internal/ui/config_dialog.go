@@ -25,6 +25,7 @@ type configForm struct {
 	scrollbackSpin          *gtk.SpinButton
 	scrollbarSwitch         *gtk.Switch
 	timersSwitch            *gtk.Switch
+	detectHyperlinksSwitch  *gtk.Switch
 	widthSpin               *gtk.SpinButton
 	heightSpin              *gtk.SpinButton
 	titleEntry              *gtk.Entry
@@ -75,6 +76,7 @@ func (f *configForm) collect(base config.Config) config.Config {
 	next.Scrollback = int(f.scrollbackSpin.Value())
 	next.ShowScrollbar = f.scrollbarSwitch.Active()
 	next.ShowTimers = f.timersSwitch.Active()
+	next.DetectHyperlinks = f.detectHyperlinksSwitch.Active()
 	next.WindowColumns = int(f.widthSpin.Value())
 	next.WindowRows = int(f.heightSpin.Value())
 	next.Title = f.titleEntry.Text()
@@ -189,6 +191,11 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	f.scrollbarSwitch.SetActive(cfg.ShowScrollbar)
 	f.scrollbarSwitch.SetHAlign(gtk.AlignStart)
 
+	f.detectHyperlinksSwitch = gtk.NewSwitch()
+
+	f.detectHyperlinksSwitch.SetActive(cfg.DetectHyperlinks)
+	f.detectHyperlinksSwitch.SetHAlign(gtk.AlignStart)
+
 	f.terminalNotificationsDD = gtk.NewDropDownFromStrings([]string{"D-Bus", "Off"})
 
 	if cfg.TerminalNotificationMethod == config.TerminalNotificationDBus {
@@ -203,7 +210,8 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 
 	cfgAttach(terminalGrid, 0, "Scrollback lines", f.scrollbackSpin)
 	cfgAttach(terminalGrid, 1, "Show scrollbar", f.scrollbarSwitch)
-	cfgAttach(terminalGrid, 2, "Terminal notifications", f.terminalNotificationsDD)
+	cfgAttach(terminalGrid, 2, "Detect hyperlinks", f.detectHyperlinksSwitch)
+	cfgAttach(terminalGrid, 3, "Terminal notifications", f.terminalNotificationsDD)
 
 	// window
 	f.widthSpin = cfgSpin(40, 500, 1, float64(cfg.WindowColumns))

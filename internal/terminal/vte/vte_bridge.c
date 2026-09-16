@@ -242,3 +242,45 @@ void vteReset(VteTerminal *terminal) {
 void vteSetSize(VteTerminal *terminal, int columns, int rows) {
     vte_terminal_set_size(terminal, (glong)columns, (glong)rows);
 }
+
+/* --- hyperlinks --- */
+
+void vteSetAllowHyperlink(VteTerminal *terminal, int allow) {
+    vte_terminal_set_allow_hyperlink(terminal, allow != 0);
+}
+
+/* Match scheme URLs (https://, ftp://, file://, ...) and bare www. hosts.
+ * Trailing punctuation is stripped by the caller before opening. */
+int vteAddUrlMatch(VteTerminal *terminal) {
+    static const char *pattern =
+        "(?i)\\b((?:[a-z][a-z0-9+.-]*://|www\\.)[^\\s<>\"']+)";
+
+    GError *error = NULL;
+    VteRegex *regex = vte_regex_new_for_match(pattern, -1,
+                                              VTE_REGEX_FLAGS_DEFAULT, &error);
+    if (regex == NULL) {
+        if (error != NULL) { g_error_free(error); }
+        return -1;
+    }
+
+    int tag = vte_terminal_match_add_regex(terminal, regex, 0);
+    vte_terminal_match_set_cursor_name(terminal, tag, "pointer");
+    vte_regex_unref(regex);
+
+    return tag;
+}
+
+void vteRemoveUrlMatch(VteTerminal *terminal, int tag) {
+    if (tag >= 0) {
+        vte_terminal_match_remove(terminal, tag);
+    }
+}
+
+char *vteMatchCheckAt(VteTerminal *terminal, double x, double y) {
+    int tag = -1;
+    return vte_terminal_check_match_at(terminal, x, y, &tag);
+}
+
+char *vteHyperlinkCheckAt(VteTerminal *terminal, double x, double y) {
+    return vte_terminal_check_hyperlink_at(terminal, x, y);
+}

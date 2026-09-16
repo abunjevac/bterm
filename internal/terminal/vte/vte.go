@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -17,6 +18,7 @@ import (
 	"unsafe"
 
 	coreglib "github.com/diamondburned/gotk4/pkg/core/glib"
+	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
 	"github.com/abunjevac/bterm/internal/terminal"
@@ -47,7 +49,11 @@ type Terminal struct {
 	onTitle         func(string)
 	onNotification  func(title, message string)
 	onClipboardCopy func(text string)
+	onOpenLink      func(uri string)
 	onExit          func(int)
+
+	detectHyperlinks bool
+	urlMatchTag      int
 }
 
 //nolint:gochecknoglobals
@@ -93,6 +99,8 @@ func New() *Terminal {
 		columns:  80,
 		rows:     24,
 		done:     make(chan struct{}),
+
+		urlMatchTag: -1,
 	}
 
 	regMu.Lock()
@@ -102,6 +110,8 @@ func New() *Terminal {
 
 	C.vteConnectTitleChanged(ptr, C.int(t.id))
 	C.vteConnectChildExited(ptr, C.int(t.id))
+
+	t.installLinkClick()
 
 	return t
 }
@@ -166,6 +176,30 @@ func (t *Terminal) SetScrollbar(visible bool) {
 		t.scrolled.SetPolicy(gtk.PolicyNever, gtk.PolicyNever)
 	}
 }
+
+// SetDetectHyperlinks enables or disables OSC 8 hyperlink rendering and
+// plain-URL detection. When enabled, Ctrl+click on a link invokes OnOpenLink.
+func (t *Terminal) SetDetectHyperlinks(enable bool) {
+	t.detectHyperlinks = enable
+
+	C.vteSetAllowHyperlink(t.ptr, cInt(enable))
+
+	if enable && t.urlMatchTag < 0 {
+		t.urlMatchTag = int(C.vteAddUrlMatch(t.ptr)) //nolint:nlreturn // cgo call precedes a return
+
+		return
+	}
+
+	if !enable && t.urlMatchTag >= 0 {
+		C.vteRemoveUrlMatch(t.ptr, C.int(t.urlMatchTag))
+
+		t.urlMatchTag = -1
+	}
+}
+
+// OnOpenLink sets the callback invoked when the user Ctrl+clicks a detected
+// hyperlink or URL.
+func (t *Terminal) OnOpenLink(f func(uri string)) { t.onOpenLink = f }
 
 // SetSize sets the terminal's preferred size in character columns and rows.
 // Call before the window is presented so GTK sizes the window to fit.
@@ -304,6 +338,81 @@ func (t *Terminal) ForegroundPGID() (int, error) {
 	}
 
 	return int(pgrp), nil
+}
+
+// installLinkClick attaches a Ctrl+click gesture that opens the hyperlink or
+// URL under the pointer. Non-Ctrl clicks are denied so VTE keeps its normal
+// selection behavior.
+func (t *Terminal) installLinkClick() {
+	gesture := gtk.NewGestureClick()
+
+	gesture.SetButton(1) // left button only
+	gesture.SetPropagationPhase(gtk.PhaseCapture)
+
+	gesture.ConnectPressed(func(_ int, x, y float64) {
+		if !t.detectHyperlinks || t.onOpenLink == nil ||
+			gesture.CurrentEventState()&gdk.ControlMask == 0 {
+			gesture.SetState(gtk.EventSequenceDenied)
+
+			return
+		}
+
+		uri := t.linkAt(x, y)
+		if uri == "" {
+			gesture.SetState(gtk.EventSequenceDenied)
+
+			return
+		}
+
+		gesture.SetState(gtk.EventSequenceClaimed)
+
+		t.onOpenLink(uri)
+	})
+
+	gtk.BaseWidget(t.widget).AddController(gesture)
+}
+
+// linkAt returns the URI at terminal widget coordinates (x, y): an OSC 8
+// hyperlink takes precedence, falling back to a regex URL match. Returns ""
+// when none.
+func (t *Terminal) linkAt(x, y float64) string {
+	if hlink := C.vteHyperlinkCheckAt(t.ptr, C.double(x), C.double(y)); hlink != nil { //nolint:nlreturn // cgo call precedes a return
+		uri := C.GoString(hlink)
+
+		C.free(unsafe.Pointer(hlink))
+
+		return uri
+	}
+
+	if match := C.vteMatchCheckAt(t.ptr, C.double(x), C.double(y)); match != nil { //nolint:nlreturn // cgo call precedes a return
+		raw := C.GoString(match)
+
+		C.free(unsafe.Pointer(match))
+
+		return normalizeURL(raw)
+	}
+
+	return ""
+}
+
+// normalizeURL strips trailing punctuation that the greedy regex captures and
+// promotes bare www. hosts to https.
+func normalizeURL(s string) string {
+	s = strings.TrimRight(s, ".,;:!?)]}\"'")
+
+	if strings.HasPrefix(s, "www.") {
+		return "https://" + s
+	}
+
+	return s
+}
+
+func cInt(b bool) C.int {
+	if b {
+		return 1
+	}
+
+	return 0
 }
 
 func (t *Terminal) copyFrontendToBackend() {

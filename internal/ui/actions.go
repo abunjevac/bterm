@@ -133,6 +133,19 @@ func (w *window) openNewWindow() {
 	win.Present()
 }
 
+// openLink opens uri with the desktop's default handler (xdg-open).
+func (w *window) openLink(uri string) {
+	if strings.TrimSpace(uri) == "" {
+		return
+	}
+
+	if err := exec.CommandContext(context.Background(), "xdg-open", uri).Start(); err != nil {
+		w.toast.show("Could not open link")
+
+		_, _ = fmt.Fprintf(os.Stderr, "bterm: open link %s: %v\n", uri, err)
+	}
+}
+
 // dispatchTabSelect activates a numbered tab (Tab1–Tab9). Returns true when consumed.
 func (w *window) dispatchTabSelect(a keymap.Action) bool {
 	if a >= keymap.ActionTab1 && a <= keymap.ActionTab9 {

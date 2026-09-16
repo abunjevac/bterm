@@ -31,3 +31,8 @@ int vteHasSelection(VteTerminal *terminal);
 void vteClear(VteTerminal *terminal);
 void vteReset(VteTerminal *terminal);
 void vteSetSize(VteTerminal *terminal, int columns, int rows);
+void vteSetAllowHyperlink(VteTerminal *terminal, int allow);
+int vteAddUrlMatch(VteTerminal *terminal);
+void vteRemoveUrlMatch(VteTerminal *terminal, int tag);
+char *vteMatchCheckAt(VteTerminal *terminal, double x, double y);
+char *vteHyperlinkCheckAt(VteTerminal *terminal, double x, double y);
