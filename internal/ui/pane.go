@@ -313,6 +313,12 @@ func (pa *paneArea) buildFromDesc(d *panetree.NodeDesc) gtk.Widgetter {
 	paned.SetVExpand(true)
 	paned.SetHExpand(true)
 
+	// use a wide handle so the resize grab area matches the visible separator
+	// exactly. with the default narrow handle GTK adds an invisible
+	// HANDLE_EXTRA_SIZE (6px) padding around the line, which steals drags from
+	// adjacent terminal text and blocks mouse selection near the split.
+	paned.SetWideHandle(true)
+
 	// prevent panes from collapsing to zero when GTK computes initial positions
 	paned.SetShrinkStartChild(false)
 	paned.SetShrinkEndChild(false)
