@@ -3,6 +3,7 @@ package ui
 import (
 	"os"
 
+	"github.com/diamondburned/gotk4/pkg/core/glib"
 	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
@@ -76,6 +77,7 @@ func (pa *paneArea) registerTerm(id int, t terminal.Terminal) {
 
 	pa.installTerminalContextMenu(id, w)
 	pa.installFontScroll(id, w)
+	pa.installFocusSync(id, w)
 
 	t.OnChildExited(func(_ int) {
 		pa.closeID(id)
@@ -209,17 +211,60 @@ func (pa *paneArea) focusedTerminal() terminal.Terminal {
 
 // grabFocus gives keyboard focus to the focused pane's widget.
 func (pa *paneArea) grabFocus() {
-	if w := pa.widgets[pa.tree.Focused()]; w != nil {
-		if sw, ok := w.(*gtk.ScrolledWindow); ok {
-			if child := sw.Child(); child != nil {
-				gtk.BaseWidget(child).GrabFocus()
-
-				return
-			}
-		}
-
-		gtk.BaseWidget(w).GrabFocus()
+	w := pa.widgets[pa.tree.Focused()]
+	if w == nil {
+		return
 	}
+
+	target := gtk.BaseWidget(w)
+
+	if sw, ok := w.(*gtk.ScrolledWindow); ok {
+		if child := sw.Child(); child != nil {
+			target = gtk.BaseWidget(child)
+		}
+	}
+
+	grabFocusWhenMapped(target)
+}
+
+// grabFocusWhenMapped grabs keyboard focus on w, deferring to its "map"
+// signal if w is not mapped yet. GTK requires a widget to have gone through
+// a size-allocate pass (i.e. be mapped) before it can actually receive
+// native keyboard/IM input: calling GrabFocus() before that updates GTK's
+// logical focus-widget pointer but silently fails to move real input focus,
+// leaving whichever widget was previously focused still receiving keys.
+// This is what happens right after rebuild() reparents a freshly-split pane,
+// since the new GtkPaned hasn't been through layout yet.
+func grabFocusWhenMapped(w *gtk.Widget) {
+	if w.Mapped() {
+		w.GrabFocus()
+
+		return
+	}
+
+	var handle glib.SignalHandle
+
+	handle = w.ConnectMap(func() {
+		w.GrabFocus()
+		w.HandlerDisconnect(handle)
+	})
+}
+
+// installFocusSync keeps the pane-tree model's focused id in sync with GTK's
+// real keyboard focus. All keymap-bound actions (copy, paste, close, split,
+// ...) are dispatched from a window-level key controller and read the
+// focused pane through the model, not GTK's actual focus widget — so
+// without this, clicking into a different pane (which GTK focuses on its
+// own) leaves those actions still targeting whichever pane was last focused
+// via split, close, focusDir, or the context menu.
+func (pa *paneArea) installFocusSync(id int, widget gtk.Widgetter) {
+	focus := gtk.NewEventControllerFocus()
+
+	focus.ConnectEnter(func() {
+		pa.tree.SetFocus(id)
+	})
+
+	gtk.BaseWidget(widget).AddController(focus)
 }
 
 // installFontScroll attaches a scroll controller that adjusts the font size
