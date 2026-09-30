@@ -34,6 +34,7 @@ type configForm struct {
 	editorArgsEntry         *gtk.Entry
 	fileBrowserEntry        *gtk.Entry
 	fileBrowserArgsEntry    *gtk.Entry
+	legacyProgramsEntry     *gtk.Entry
 }
 
 // collect reads the current widget values into a new Config, using base as the
@@ -84,6 +85,7 @@ func (f *configForm) collect(base config.Config) config.Config {
 	next.EditorArgs = splitCommandArgs(f.editorArgsEntry.Text())
 	next.FileBrowser = f.fileBrowserEntry.Text()
 	next.FileBrowserArgs = splitCommandArgs(f.fileBrowserArgsEntry.Text())
+	next.LegacyPrograms = splitCommandArgs(f.legacyProgramsEntry.Text())
 
 	if f.terminalNotificationsDD.Selected() == 0 {
 		next.TerminalNotificationMethod = config.TerminalNotificationDBus
@@ -212,6 +214,10 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	cfgAttach(terminalGrid, 1, "Show scrollbar", f.scrollbarSwitch)
 	cfgAttach(terminalGrid, 2, "Detect hyperlinks", f.detectHyperlinksSwitch)
 	cfgAttach(terminalGrid, 3, "Terminal notifications", f.terminalNotificationsDD)
+
+	f.legacyProgramsEntry = cfgEntry(strings.Join(cfg.LegacyPrograms, " "), "")
+
+	cfgAttach(terminalGrid, 4, "Legacy key programs", f.legacyProgramsEntry)
 
 	// window
 	f.widthSpin = cfgSpin(40, 500, 1, float64(cfg.WindowColumns))

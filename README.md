@@ -127,9 +127,12 @@ editor          = "zed"
 editor_args     = ["{cwd}"]
 file_browser    = "dolphin"
 file_browser_args = ["{cwd}"]
+legacy_programs = []  # e.g. ["telnet"]
 ```
 
 `{cwd}` is replaced with the focused terminal's current directory. Configure the executable and arguments in Preferences; the terminal popup menu also provides **Open > Editor** and **Open > File Browser**.
+
+`legacy_programs` lists foreground program names (the kernel `comm` name, at most 15 characters) for which bterm sends `^H` for Backspace, `DEL` for Delete, `ESC[1~` for Home and `ESC[4~` for End instead of the xterm defaults (`DEL`, `ESC[3~`, `ESC[H` and `ESC[F`). Use it for old telnet-style programs that expect this convention. Only unmodified keys are affected, and the check happens on each key press.
 
 Terminal notifications are enabled by default. bterm listens for sequences such as `OSC 777;notify;Title;Message ST` and `OSC 9;Message ST`, then sends them directly to `org.freedesktop.Notifications` over D-Bus.
 

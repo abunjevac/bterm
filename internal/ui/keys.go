@@ -7,6 +7,7 @@ import (
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
 	"github.com/abunjevac/bterm/internal/keymap"
+	"github.com/abunjevac/bterm/internal/legacy"
 	"github.com/abunjevac/bterm/internal/terminal/kitty"
 )
 
@@ -45,6 +46,10 @@ func (w *window) installKeys() {
 			return true
 		}
 
+		if w.feedLegacyKey(keyval, state) {
+			return true
+		}
+
 		// no keymap binding matched. If the focused terminal has the
 		// kitty keyboard protocol disambiguate mode active, encode the
 		// key as a CSI u sequence and send it directly to the shell
@@ -62,6 +67,58 @@ func (w *window) installKeys() {
 	})
 
 	w.win.AddController(ctl)
+}
+
+// feedLegacyKey sends the legacy Backspace/Delete/Home/End sequence when the focused
+// terminal's foreground program is listed in legacy_programs. It reports
+// whether the key was consumed.
+func (w *window) feedLegacyKey(keyval uint, state gdk.ModifierType) bool { //nolint:cyclop
+	var key legacy.Key
+
+	switch keyval {
+	case gdk.KEY_BackSpace:
+		key = legacy.Backspace
+	case gdk.KEY_Delete:
+		key = legacy.Delete
+	case gdk.KEY_Home:
+		key = legacy.Home
+	case gdk.KEY_End:
+		key = legacy.End
+	default:
+		return false
+	}
+
+	programs := w.bundle.Config.LegacyPrograms
+
+	if len(programs) == 0 || state&(gdk.ControlMask|gdk.ShiftMask|gdk.AltMask|gdk.SuperMask) != 0 {
+		return false
+	}
+
+	ft := w.focusedTerminal()
+
+	if ft == nil {
+		return false
+	}
+
+	pgid, err := ft.ForegroundPGID()
+	if err != nil {
+		return false
+	}
+
+	program, err := legacy.ProgramName(pgid)
+	if err != nil {
+		return false
+	}
+
+	seq := legacy.Sequence(key, program, programs)
+
+	if seq == nil {
+		return false
+	}
+
+	ft.FeedChild(seq)
+
+	return true
 }
 
 // feedFocusedTerminal writes seq to the active tab's focused terminal, as if typed.

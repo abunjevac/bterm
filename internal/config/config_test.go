@@ -32,6 +32,7 @@ func TestParseAppliesDefaults(t *testing.T) {
 	require.Equal(t, []string{"{cwd}"}, cfg.EditorArgs)
 	require.Equal(t, "dolphin", cfg.FileBrowser)
 	require.Equal(t, []string{"{cwd}"}, cfg.FileBrowserArgs)
+	require.Empty(t, cfg.LegacyPrograms)
 }
 
 func TestParseOverrides(t *testing.T) {
@@ -47,6 +48,7 @@ func TestParseOverrides(t *testing.T) {
 	require.Equal(t, "tokyo-night", cfg.Theme)
 	require.Equal(t, 10000, cfg.Scrollback)
 	require.Equal(t, "off", cfg.TerminalNotificationMethod)
+	require.Equal(t, []string{"telnet", "foo"}, cfg.LegacyPrograms)
 }
 
 func TestParseAllowsTimersToBeDisabled(t *testing.T) {

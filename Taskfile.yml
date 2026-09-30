@@ -1,6 +1,17 @@
 version: "3"
 
 tasks:
+  deps:
+    desc: Install system packages required to build bterm (Debian/Ubuntu)
+    cmds:
+      - sudo apt update
+      - >-
+        sudo apt install -y
+        libgtk-4-dev
+        libvte-2.91-gtk4-dev
+        libgirepository1.0-dev
+        upx
+
   generate-icons:
     desc: Generate embedded GTK icon resources
     sources:

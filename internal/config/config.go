@@ -36,6 +36,7 @@ type Config struct {
 	EditorArgs                 []string `toml:"editor_args"`
 	FileBrowser                string   `toml:"file_browser"`
 	FileBrowserArgs            []string `toml:"file_browser_args"`
+	LegacyPrograms             []string `toml:"legacy_programs"`
 }
 
 // Parse decodes config.toml content, rejecting unknown keys, then applies defaults.
