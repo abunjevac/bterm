@@ -66,9 +66,12 @@ tasks:
       - task: scan
 
   install:
-    desc: Install bterm to $GOPATH/bin
+    desc: Build bterm, pack it with upx and install to ~/.local/bin
     cmds:
-      - go install ./cmd/bterm
+      - task: build
+      - task: pack
+      - mkdir -p ~/.local/bin
+      - mv bterm ~/.local/bin/bterm
 
   install-desktop:
     desc: Install desktop launcher and app icon for the current user
