@@ -274,24 +274,36 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	}
 
 	// assemble
-	box := gtk.NewBox(gtk.OrientationVertical, 0)
+	box := gtk.NewBox(gtk.OrientationHorizontal, 12)
 
-	sections := []struct {
+	columns := [][]struct {
 		title string
 		grid  *gtk.Grid
 	}{
-		{"Typography", typographyGrid},
-		{"Appearance", appearanceGrid}, //nolint:goconst // dialog section labels intentionally remain local.
-		{"Shell", shellGrid},
-		{"Terminal", terminalGrid},
-		{"Window", windowGrid},
-		{"Applications", applicationsGrid},
-		{"Commands", commandsGrid},
+		{
+			{"Typography", typographyGrid},
+			{"Appearance", appearanceGrid}, //nolint:goconst // dialog section labels intentionally remain local.
+			{"Shell", shellGrid},
+			{"Terminal", terminalGrid},
+		},
+		{
+			{"Window", windowGrid},
+			{"Applications", applicationsGrid},
+			{"Commands", commandsGrid},
+		},
 	}
 
-	for _, s := range sections {
-		box.Append(cfgSectionLabel(s.title))
-		box.Append(s.grid)
+	for _, sections := range columns {
+		col := gtk.NewBox(gtk.OrientationVertical, 0)
+
+		col.SetHExpand(true)
+
+		for _, s := range sections {
+			col.Append(cfgSectionLabel(s.title))
+			col.Append(s.grid)
+		}
+
+		box.Append(col)
 	}
 
 	return box, f

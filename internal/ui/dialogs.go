@@ -12,7 +12,7 @@ type dialogSpec struct {
 }
 
 func preferencesDialogSpec() dialogSpec {
-	return dialogSpec{width: 500, height: 760, fixed: true}
+	return dialogSpec{width: 900, height: 460, fixed: true}
 }
 
 func shortcutsDialogSpec() dialogSpec {
