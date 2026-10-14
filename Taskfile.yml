@@ -129,7 +129,7 @@ tasks:
         git push --atomic origin HEAD "$tag"
 
   clean-runs:
-    desc: Delete GitHub workflow runs older than DAYS days, default 7 (requires gh)
+    desc: Delete GitHub workflow runs that failed or are older than DAYS days, default 7 (requires gh)
     silent: true
     vars:
       DAYS: '{{.DAYS | default "7"}}'
@@ -137,7 +137,10 @@ tasks:
       - |
         set -e
         cutoff=$(date -u -d "{{.DAYS}} days ago" +%F)
-        gh api --paginate "repos/{owner}/{repo}/actions/runs?created=<$cutoff" --jq '.workflow_runs[].id' |
+        {
+          gh api --paginate "repos/{owner}/{repo}/actions/runs?created=<$cutoff" --jq '.workflow_runs[].id'
+          gh api --paginate "repos/{owner}/{repo}/actions/runs?status=failure" --jq '.workflow_runs[].id'
+        } | sort -u |
           xargs -r -I{} gh api -X DELETE "repos/{owner}/{repo}/actions/runs/{}"
 
   hooks:
