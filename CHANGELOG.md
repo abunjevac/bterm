@@ -1,4 +1,23 @@
 
+## v0.3.0
+
+- Clean failed workflow runs
+- Always-on kitty keyboard protocol
+- Ubuntu 26.04 runners for GLib 2.88
+- Clear workflow runs task
+- Upgrade GitHub workflow actions
+- Two-column preferences dialog
+- Tab directory tooltip and copy path menu
+- Upgrade deps
+- Configurable command shortcuts
+- Install task to local bin
+- Filled split icons for GTK 4.22
+- Legacy key programs compatibility support
+- GTK focus transfer on pane split
+- Pane split resize over separator line only
+- Detect hyperlinks
+- Drop sub-second fraction from long command durations
+
 ## v0.2.0
 
 - Excude prepare release commits from change log
