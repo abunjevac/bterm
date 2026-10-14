@@ -33,12 +33,7 @@ type kittyResult struct {
 
 // Filter removes kitty keyboard protocol negotiation sequences from data.
 // It updates the internal state and prepares responses for query sequences.
-// When kittyEnabled is false, data passes through unchanged.
-func (p *kittyParser) Filter(data []byte) kittyResult { //nolint:funlen
-	if !kittyEnabled {
-		return kittyResult{out: data}
-	}
-
+func (p *kittyParser) Filter(data []byte) kittyResult {
 	data = prependPending(&p.pending, data)
 
 	p.out = p.out[:0]
@@ -123,10 +118,6 @@ func (p *kittyParser) Flags() int { return p.state.Flags() }
 
 // Disambiguate reports whether the disambiguate flag is active.
 func (p *kittyParser) Disambiguate() bool {
-	if !kittyEnabled {
-		return false
-	}
-
 	return p.state.Disambiguate()
 }
 

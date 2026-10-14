@@ -1,5 +1,3 @@
-//go:build !nokitty
-
 package vte
 
 import "testing"
