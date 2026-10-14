@@ -14,6 +14,9 @@ import (
 	"github.com/abunjevac/bterm/internal/theme"
 )
 
+// commandSlots is the number of configurable send-command shortcuts.
+const commandSlots = 4
+
 // configForm holds all editable widgets in the Preferences dialog.
 type configForm struct {
 	fontBtn                 *gtk.FontDialogButton
@@ -35,11 +38,12 @@ type configForm struct {
 	fileBrowserEntry        *gtk.Entry
 	fileBrowserArgsEntry    *gtk.Entry
 	legacyProgramsEntry     *gtk.Entry
+	commandEntries          [commandSlots]*gtk.Entry
 }
 
 // collect reads the current widget values into a new Config, using base as the
 // starting point so fields not represented in the form keep their current values.
-func (f *configForm) collect(base config.Config) config.Config {
+func (f *configForm) collect(base config.Config) config.Config { //nolint:cyclop,funlen
 	next := base
 
 	if desc := f.fontBtn.FontDesc(); desc != nil {
@@ -86,6 +90,17 @@ func (f *configForm) collect(base config.Config) config.Config {
 	next.FileBrowser = f.fileBrowserEntry.Text()
 	next.FileBrowserArgs = splitCommandArgs(f.fileBrowserArgsEntry.Text())
 	next.LegacyPrograms = splitCommandArgs(f.legacyProgramsEntry.Text())
+
+	next.Commands = nil
+
+	for i, e := range f.commandEntries {
+		cmd := strings.TrimSpace(e.Text())
+
+		if cmd != "" {
+			next.Commands = append(next.Commands, make([]string, i+1-len(next.Commands))...)
+			next.Commands[i] = cmd
+		}
+	}
 
 	if f.terminalNotificationsDD.Selected() == 0 {
 		next.TerminalNotificationMethod = config.TerminalNotificationDBus
@@ -243,6 +258,21 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	cfgAttach(applicationsGrid, 2, "File browser", f.fileBrowserEntry)
 	cfgAttach(applicationsGrid, 3, "File browser args", f.fileBrowserArgsEntry)
 
+	// commands
+	commandsGrid := cfgGrid()
+
+	for i := range f.commandEntries {
+		var current string
+
+		if i < len(cfg.Commands) {
+			current = cfg.Commands[i]
+		}
+
+		f.commandEntries[i] = cfgEntry(current, "")
+
+		cfgAttach(commandsGrid, i, fmt.Sprintf("Super+F%d", i+1), f.commandEntries[i])
+	}
+
 	// assemble
 	box := gtk.NewBox(gtk.OrientationVertical, 0)
 
@@ -256,6 +286,7 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 		{"Terminal", terminalGrid},
 		{"Window", windowGrid},
 		{"Applications", applicationsGrid},
+		{"Commands", commandsGrid},
 	}
 
 	for _, s := range sections {

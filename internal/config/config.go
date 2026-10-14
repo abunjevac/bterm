@@ -37,6 +37,7 @@ type Config struct {
 	FileBrowser                string   `toml:"file_browser"`
 	FileBrowserArgs            []string `toml:"file_browser_args"`
 	LegacyPrograms             []string `toml:"legacy_programs"`
+	Commands                   []string `toml:"commands"`
 }
 
 // Parse decodes config.toml content, rejecting unknown keys, then applies defaults.

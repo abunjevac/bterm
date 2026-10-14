@@ -208,6 +208,9 @@ func (w *window) dispatchPane(pa *paneArea, a keymap.Action) { //nolint:cyclop
 		pa.sendNewlinePlainToFocused()
 	case keymap.ActionShowContextMenu:
 		pa.showFocusedContextMenu()
+	case keymap.ActionSendCommand1, keymap.ActionSendCommand2,
+		keymap.ActionSendCommand3, keymap.ActionSendCommand4:
+		pa.sendCommandToFocused(w.bundle.Config.Commands, int(a-keymap.ActionSendCommand1))
 	default:
 		pa.dispatchDir(a)
 	}
@@ -335,6 +338,18 @@ func (pa *paneArea) sendNewlineToFocused() {
 func (pa *paneArea) sendNewlinePlainToFocused() {
 	if t := pa.focusedTerminal(); t != nil {
 		t.FeedChild([]byte{'\n'})
+	}
+}
+
+// sendCommandToFocused feeds the configured command at slot, followed by a
+// newline so it executes, to the focused terminal. Unconfigured slots do nothing.
+func (pa *paneArea) sendCommandToFocused(commands []string, slot int) {
+	if slot >= len(commands) || strings.TrimSpace(commands[slot]) == "" {
+		return
+	}
+
+	if t := pa.focusedTerminal(); t != nil {
+		t.FeedChild([]byte(commands[slot] + "\n"))
 	}
 }
 

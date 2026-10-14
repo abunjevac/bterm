@@ -6,3 +6,4 @@ theme = "tokyo-night"
 scrollback = 10000
 terminal_notification_method = "off"
 legacy_programs = ["telnet", "foo"]
+commands = ["ls -la", "", "git status"]

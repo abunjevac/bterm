@@ -44,6 +44,10 @@ const (
 	ActionSendNewline
 	ActionSendNewlinePlain
 	ActionShowContextMenu
+	ActionSendCommand1
+	ActionSendCommand2
+	ActionSendCommand3
+	ActionSendCommand4
 )
 
 // actionNames maps each Action to its TOML key (snake_case).
@@ -88,6 +92,10 @@ var actionNames = map[Action]string{
 	ActionSendNewline:      "send_newline",
 	ActionSendNewlinePlain: "send_newline_plain",
 	ActionShowContextMenu:  "show_context_menu",
+	ActionSendCommand1:     "send_command_1",
+	ActionSendCommand2:     "send_command_2",
+	ActionSendCommand3:     "send_command_3",
+	ActionSendCommand4:     "send_command_4",
 }
 
 // nameToAction is the reverse of actionNames, built once at init.

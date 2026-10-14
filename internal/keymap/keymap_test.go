@@ -110,6 +110,16 @@ func TestDefaultLayout(t *testing.T) {
 	require.Equal(t, keymap.ActionOpenFileBrowser, layout.Lookup("ctrl+shift+f"))
 }
 
+func TestDefaultLayoutSendCommandBindings(t *testing.T) {
+	t.Parallel()
+
+	layout := keymap.Default()
+
+	require.Equal(t, keymap.ActionSendCommand1, layout.Lookup("super+f1"))
+	require.Equal(t, keymap.ActionSendCommand4, layout.Lookup("super+f4"))
+	require.Equal(t, "send_command_3", keymap.ActionSendCommand3.String())
+}
+
 func TestSendNewlineActionName(t *testing.T) {
 	t.Parallel()
 

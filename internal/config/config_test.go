@@ -49,6 +49,7 @@ func TestParseOverrides(t *testing.T) {
 	require.Equal(t, 10000, cfg.Scrollback)
 	require.Equal(t, "off", cfg.TerminalNotificationMethod)
 	require.Equal(t, []string{"telnet", "foo"}, cfg.LegacyPrograms)
+	require.Equal(t, []string{"ls -la", "", "git status"}, cfg.Commands)
 }
 
 func TestParseAllowsTimersToBeDisabled(t *testing.T) {

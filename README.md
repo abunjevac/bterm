@@ -128,11 +128,14 @@ editor_args     = ["{cwd}"]
 file_browser    = "dolphin"
 file_browser_args = ["{cwd}"]
 legacy_programs = []  # e.g. ["telnet"]
+commands        = []  # e.g. ["ls -la", "git status"]
 ```
 
 `{cwd}` is replaced with the focused terminal's current directory. Configure the executable and arguments in Preferences; the terminal popup menu also provides **Open > Editor** and **Open > File Browser**.
 
 `legacy_programs` lists foreground program names (the kernel `comm` name, at most 15 characters) for which bterm sends `^H` for Backspace, `DEL` for Delete, `ESC[1~` for Home and `ESC[4~` for End instead of the xterm defaults (`DEL`, `ESC[3~`, `ESC[H` and `ESC[F`). Use it for old telnet-style programs that expect this convention. Only unmodified keys are affected, and the check happens on each key press.
+
+`commands` holds up to four shell commands, bound by default to `Super+F1`–`Super+F4`. The command is typed into the focused terminal followed by a newline; unset slots do nothing. Edit them under **Commands** in Preferences.
 
 Terminal notifications are enabled by default. bterm listens for sequences such as `OSC 777;notify;Title;Message ST` and `OSC 9;Message ST`, then sends them directly to `org.freedesktop.Notifications` over D-Bus.
 
@@ -214,6 +217,7 @@ All bindings are configurable in `~/.config/bterm/keymap.toml`. The current set 
 | `Ctrl+,` | Open Config |
 | `Ctrl+Shift+I` | Open editor in current directory |
 | `Ctrl+Shift+F` | Open file browser in current directory |
+| `Super+F1`–`Super+F4` | Send configured command 1–4 to the terminal and run it (no-op when unset) |
 
 ---
 
