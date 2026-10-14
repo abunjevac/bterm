@@ -65,6 +65,7 @@ func (t *tab) buildLabel(w *window, idx int) {
 	})
 
 	installTabDetachDrag(selectBtn, w, t)
+	installTabCWD(selectBtn, w, t)
 
 	// closeBtn is a sibling of selectBtn, not nested inside it
 	closeBtn := gtk.NewButton()
@@ -82,6 +83,72 @@ func (t *tab) buildLabel(w *window, idx int) {
 	t.label.SetMarginBottom(2)
 	t.label.Append(selectBtn)
 	t.label.Append(closeBtn)
+}
+
+// cwd returns the working directory of the tab's focused pane, or an empty
+// string when it is unavailable.
+func (t *tab) cwd() string {
+	if ft := t.area.focusedTerminal(); ft != nil {
+		return ft.CurrentDir()
+	}
+
+	return ""
+}
+
+// installTabCWD shows the focused pane's directory as a tooltip on hover and
+// offers a "Copy path" popover on right-click. The directory is read on demand
+// so it always reflects the current state.
+func installTabCWD(selectBtn *gtk.Button, w *window, t *tab) {
+	selectBtn.SetHasTooltip(true)
+	selectBtn.ConnectQueryTooltip(func(_, _ int, _ bool, tooltip *gtk.Tooltip) bool {
+		cwd := t.cwd()
+
+		if cwd == "" {
+			return false
+		}
+
+		tooltip.SetText(cwd)
+
+		return true
+	})
+
+	click := gtk.NewGestureClick()
+
+	click.SetButton(3)
+	click.ConnectPressed(func(_ int, x, y float64) {
+		showTabMenu(selectBtn, w, t.cwd(), x, y)
+	})
+
+	selectBtn.AddController(click)
+}
+
+func showTabMenu(selectBtn *gtk.Button, w *window, cwd string, x, y float64) {
+	popover := gtk.NewPopover()
+	row := contextRow("Copy path", "", false)
+
+	row.SetSensitive(cwd != "")
+
+	copyClick := gtk.NewGestureClick()
+
+	copyClick.SetButton(0)
+	copyClick.ConnectReleased(func(_ int, _, _ float64) {
+		popover.Popdown()
+
+		if clip := w.clipboard(); clip != nil {
+			clip.SetText(cwd)
+		}
+
+		w.toast.show("⧉ Copied")
+	})
+
+	row.AddController(copyClick)
+
+	rect := gdk.NewRectangle(int(x), int(y), 1, 1)
+
+	popover.SetChild(row)
+	popover.SetParent(selectBtn)
+	popover.SetPointingTo(&rect)
+	popover.Popup()
 }
 
 func installTabDetachDrag(selectBtn *gtk.Button, w *window, t *tab) {
