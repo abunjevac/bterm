@@ -194,7 +194,13 @@ func contextSubmenu(w *window, root *gtk.Popover, openSubmenu **gtk.Popover, lab
 func installSubmenuOpenControllers(row *gtk.Box, submenu *gtk.Popover, openSubmenu **gtk.Popover) {
 	motion := gtk.NewEventControllerMotion()
 
-	motion.ConnectEnter(func(_, _ float64) {
+	motion.ConnectEnter(func(x, y float64) {
+		// GTK sends a synthetic enter at exactly (-1, -1) when the popover opens;
+		// real pointer enters carry fractional coordinates, some negative
+		if x == -1 && y == -1 {
+			return
+		}
+
 		openContextSubmenu(submenu, openSubmenu)
 	})
 
