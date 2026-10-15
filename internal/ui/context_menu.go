@@ -25,7 +25,7 @@ func (pa *paneArea) installTerminalContextMenu(id int, widget gtk.Widgetter) {
 		pa.tree.SetFocus(id)
 
 		pa.grabFocus()
-		pa.showContextMenu(id, widget, x, y)
+		pa.showContextMenu(id, widget, x, y, pa.linkAt(id, x, y))
 	})
 
 	gtk.BaseWidget(widget).AddController(gesture)
@@ -48,10 +48,23 @@ func (pa *paneArea) showFocusedContextMenu() {
 
 	w := gtk.BaseWidget(widget)
 
-	pa.showContextMenu(id, widget, float64(w.Width())/2, float64(w.Height())/2)
+	pa.showContextMenu(id, widget, float64(w.Width())/2, float64(w.Height())/2, "")
 }
 
-func (pa *paneArea) showContextMenu(id int, widget gtk.Widgetter, x, y float64) {
+// linkAt returns the link under (x, y) in the pane's terminal, or "".
+func (pa *paneArea) linkAt(id int, x, y float64) string {
+	t := pa.terms[id]
+
+	if t == nil {
+		return ""
+	}
+
+	return t.LinkAt(x, y)
+}
+
+// showContextMenu pops up the menu at (x, y); a non-empty link adds
+// link-specific entries at the top.
+func (pa *paneArea) showContextMenu(id int, widget gtk.Widgetter, x, y float64, link string) {
 	var openSubmenu *gtk.Popover
 
 	t := pa.terms[id]
@@ -67,6 +80,13 @@ func (pa *paneArea) showContextMenu(id int, widget gtk.Widgetter, x, y float64) 
 	box.SetMarginBottom(4)
 	box.SetMarginStart(4)
 	box.SetMarginEnd(4)
+
+	if link != "" {
+		box.Append(contextCallback(popover, "Open Link", func() { pa.win.openLink(link) }))
+		box.Append(contextCallback(popover, "Copy Link", func() { pa.win.copyText(link) }))
+		box.Append(gtk.NewSeparator(gtk.OrientationHorizontal))
+	}
+
 	box.Append(contextAction(pa.win, popover, "Copy", keymap.ActionCopy, hasSelection(t)))
 	box.Append(contextAction(pa.win, popover, "Paste", keymap.ActionPaste, true))
 	box.Append(gtk.NewSeparator(gtk.OrientationHorizontal))
@@ -123,6 +143,23 @@ func contextAction(w *window, root *gtk.Popover, label string, action keymap.Act
 		root.Popdown()
 
 		w.dispatch(action)
+	})
+
+	row.AddController(gesture)
+
+	return row
+}
+
+// contextCallback builds a menu row that closes the popover and runs fn.
+func contextCallback(root *gtk.Popover, label string, fn func()) gtk.Widgetter {
+	row := contextRow(label, "", false)
+	gesture := gtk.NewGestureClick()
+
+	gesture.SetButton(0)
+	gesture.ConnectReleased(func(_ int, _, _ float64) {
+		root.Popdown()
+
+		fn()
 	})
 
 	row.AddController(gesture)

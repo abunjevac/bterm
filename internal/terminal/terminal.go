@@ -35,6 +35,7 @@ type Terminal interface {
 	OnNotification(fn func(title, message string))
 	OnClipboardCopy(fn func(text string))
 	OnOpenLink(fn func(uri string))
+	LinkAt(x, y float64) string
 	OnChildExited(fn func(status int))
 	ShellPID() int
 	ForegroundPGID() (int, error)

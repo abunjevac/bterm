@@ -201,6 +201,16 @@ func (t *Terminal) SetDetectHyperlinks(enable bool) {
 // hyperlink or URL.
 func (t *Terminal) OnOpenLink(f func(uri string)) { t.onOpenLink = f }
 
+// LinkAt returns the link under widget coordinates (x, y), or "" when link
+// detection is disabled or there is none.
+func (t *Terminal) LinkAt(x, y float64) string {
+	if !t.detectHyperlinks {
+		return ""
+	}
+
+	return t.linkAt(x, y)
+}
+
 // SetSize sets the terminal's preferred size in character columns and rows.
 // Call before the window is presented so GTK sizes the window to fit.
 func (t *Terminal) SetSize(columns, rows int) {

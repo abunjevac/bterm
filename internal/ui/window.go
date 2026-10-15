@@ -215,6 +215,17 @@ func (w *window) clipboard() *gdk.Clipboard {
 	return gtk.BaseWidget(w.win).Display().Clipboard()
 }
 
+// copyText places text on the clipboard, owned by the application.
+func (w *window) copyText(text string) {
+	clip := w.clipboard()
+
+	if clip == nil {
+		return
+	}
+
+	clip.SetText(text)
+}
+
 // reownClipboard reads the current clipboard text and writes it back with
 // SetText, transferring ownership from the VTE widget to the application.
 // Without this, closing the terminal that owned the clipboard clears it.
