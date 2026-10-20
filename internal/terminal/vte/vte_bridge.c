@@ -1,6 +1,8 @@
 #include "vte.h"
 #include <errno.h>
 #include <fcntl.h>
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 #include <pango/pango.h>
 #include <pty.h>
 #include <signal.h>
@@ -257,7 +259,8 @@ int vteAddUrlMatch(VteTerminal *terminal) {
 
     GError *error = NULL;
     VteRegex *regex = vte_regex_new_for_match(pattern, -1,
-                                              VTE_REGEX_FLAGS_DEFAULT, &error);
+                                              VTE_REGEX_FLAGS_DEFAULT | PCRE2_MULTILINE,
+                                              &error);
     if (regex == NULL) {
         if (error != NULL) { g_error_free(error); }
         return -1;
