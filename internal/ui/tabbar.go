@@ -352,6 +352,16 @@ func (w *window) buildMenuPopover() *gtk.Popover {
 
 	box.Append(shortcutsBtn)
 
+	logBtn := menuItem("text-x-generic-symbolic", "Diagnostics")
+
+	logBtn.ConnectClicked(func() {
+		popover.Popdown()
+
+		showLogDialog(w.win, w)
+	})
+
+	box.Append(logBtn)
+
 	aboutBtn := menuItem("help-about-symbolic", "About bterm")
 
 	aboutBtn.ConnectClicked(func() {

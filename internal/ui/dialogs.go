@@ -23,6 +23,10 @@ func aboutDialogSpec() dialogSpec {
 	return dialogSpec{width: 460, height: 440, fixed: true}
 }
 
+func logDialogSpec() dialogSpec {
+	return dialogSpec{width: 720, height: 480, fixed: false}
+}
+
 func applyDialogSpec(win *gtk.Window, spec dialogSpec) {
 	win.SetDefaultSize(spec.width, spec.height)
 	win.SetResizable(!spec.fixed)

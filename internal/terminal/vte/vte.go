@@ -21,6 +21,7 @@ import (
 	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
+	"github.com/abunjevac/bterm/internal/logbuf"
 	"github.com/abunjevac/bterm/internal/terminal"
 	"github.com/abunjevac/bterm/internal/theme"
 )
@@ -137,6 +138,8 @@ func (t *Terminal) Spawn(workingDir, shell string, args []string, cb terminal.Sp
 		err := errors.New(C.GoString(spawn.err_msg))
 		C.vteFreeError(spawn.err_msg)
 
+		logbuf.Logf("term %d: spawn failed: %v", t.id, err)
+
 		cb(-1, err)
 
 		return
@@ -149,6 +152,8 @@ func (t *Terminal) Spawn(workingDir, shell string, args []string, cb terminal.Sp
 	go t.copyFrontendToBackend()
 	go t.copyBackendToFrontend()
 	go t.syncBackendSize()
+
+	logbuf.Logf("term %d: spawned pid %d in %q", t.id, spawn.pid, workingDir)
 
 	cb(int(spawn.pid), nil)
 }
@@ -425,17 +430,51 @@ func cInt(b bool) C.int {
 	return 0
 }
 
+// closing reports whether closeProxy already ran, making pump death expected.
+func (t *Terminal) closing() bool {
+	select {
+	case <-t.done:
+		return true
+	default:
+		return false
+	}
+}
+
+// unexpectedReadErr reports whether err is a real pump failure rather than
+// normal teardown: pty EOF surfaces as EIO when the peer vanishes (shell
+// exit), and closing our own fd surfaces as ErrClosed.
+func unexpectedReadErr(err error) bool {
+	return err != nil &&
+		!errors.Is(err, os.ErrClosed) &&
+		!errors.Is(err, syscall.EIO)
+}
+
+// unexpectedWriteErr reports whether a pump write failure is worth logging;
+// writes racing closeProxy surface as ErrClosed and are expected.
+func unexpectedWriteErr(err error) bool {
+	return err != nil && !errors.Is(err, os.ErrClosed)
+}
+
 func (t *Terminal) copyFrontendToBackend() {
 	buf := make([]byte, 32*1024)
+	loggedWriteErr := false
 
 	for {
 		n, err := t.frontend.Read(buf)
 
 		if n > 0 {
-			_ = t.writeBackend(buf[:n])
+			if werr := t.writeBackend(buf[:n]); unexpectedWriteErr(werr) && !loggedWriteErr {
+				loggedWriteErr = true
+
+				logbuf.Logf("term %d: input pump: write to shell: %v", t.id, werr)
+			}
 		}
 
 		if err != nil {
+			if unexpectedReadErr(err) {
+				logbuf.Logf("term %d: input pump died: read: %v", t.id, err)
+			}
+
 			return
 		}
 
@@ -447,42 +486,24 @@ func (t *Terminal) copyFrontendToBackend() {
 	}
 }
 
-//nolint:cyclop // read-filter-forward loop is inherently branchy
 func (t *Terminal) copyBackendToFrontend() {
 	var parser oscParser
 
 	buf := make([]byte, 32*1024)
+	loggedWriteErr := false
 
 	for {
 		n, err := t.backend.Read(buf)
 
 		if n > 0 {
-			result := parser.Filter(buf[:n])
-
-			for _, note := range result.notes {
-				if t.onNotification != nil {
-					t.onNotification(note.Title, note.Message)
-				}
-			}
-
-			if result.clipboardText != "" && t.onClipboardCopy != nil {
-				t.onClipboardCopy(result.clipboardText)
-			}
-
-			// filter kitty keyboard protocol negotiation sequences
-			// before forwarding to VTE
-			kittyResult := t.kitty.Filter(result.out)
-
-			if len(kittyResult.response) > 0 {
-				_ = t.writeBackend(kittyResult.response)
-			}
-
-			if len(kittyResult.out) > 0 {
-				_, _ = t.frontend.Write(kittyResult.out)
-			}
+			loggedWriteErr = t.forwardOutput(&parser, buf[:n], loggedWriteErr)
 		}
 
 		if err != nil {
+			if unexpectedReadErr(err) {
+				logbuf.Logf("term %d: output pump died: read: %v", t.id, err)
+			}
+
 			return
 		}
 
@@ -492,6 +513,48 @@ func (t *Terminal) copyBackendToFrontend() {
 		default:
 		}
 	}
+}
+
+// forwardOutput filters one chunk of shell output (notifications, clipboard
+// writes, kitty keyboard negotiation) and forwards the remainder to VTE.
+// The first write failure is logged once per pump, tracked via
+// loggedWriteErr, which is returned updated.
+//
+//nolint:cyclop // filter-filter-forward chain is inherently branchy
+func (t *Terminal) forwardOutput(parser *oscParser, data []byte, loggedWriteErr bool) bool {
+	result := parser.Filter(data)
+
+	for _, note := range result.notes {
+		if t.onNotification != nil {
+			t.onNotification(note.Title, note.Message)
+		}
+	}
+
+	if result.clipboardText != "" && t.onClipboardCopy != nil {
+		t.onClipboardCopy(result.clipboardText)
+	}
+
+	// filter kitty keyboard protocol negotiation sequences
+	// before forwarding to VTE
+	kittyResult := t.kitty.Filter(result.out)
+
+	if len(kittyResult.response) > 0 {
+		if werr := t.writeBackend(kittyResult.response); unexpectedWriteErr(werr) && !loggedWriteErr {
+			loggedWriteErr = true
+
+			logbuf.Logf("term %d: output pump: write response to shell: %v", t.id, werr)
+		}
+	}
+
+	if len(kittyResult.out) > 0 {
+		if _, werr := t.frontend.Write(kittyResult.out); unexpectedWriteErr(werr) && !loggedWriteErr {
+			loggedWriteErr = true
+
+			logbuf.Logf("term %d: output pump: write to terminal: %v", t.id, werr)
+		}
+	}
+
+	return loggedWriteErr
 }
 
 func (t *Terminal) syncBackendSize() {
@@ -512,6 +575,10 @@ func (t *Terminal) syncBackendSize() {
 		var rows C.int
 
 		if C.vteGetPtySize(C.int(t.frontend.Fd()), &columns, &rows) == 0 {
+			if !t.closing() {
+				logbuf.Logf("term %d: size sync stopped: winsize query failed", t.id)
+			}
+
 			return
 		}
 
@@ -571,6 +638,8 @@ func goVteChildExited(termID C.int, status C.int) {
 	if t == nil {
 		return
 	}
+
+	logbuf.Logf("term %d: child exited, status %d", t.id, int(status))
 
 	t.closeProxy()
 
