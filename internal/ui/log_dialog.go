@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
@@ -18,12 +19,12 @@ func showLogDialog(parent *gtk.ApplicationWindow, w *window) {
 
 	applyDialogSpec(win, logDialogSpec())
 
-	content, copyBtn, closeBtn := logDialogContent()
+	content, copyBtn, closeBtn := logDialogContent(w)
 
 	win.SetChild(content)
 
 	copyBtn.ConnectClicked(func() {
-		w.copyText(logText())
+		w.copyText(logText(w))
 		w.toast.show("⧉ Copied")
 	})
 	closeBtn.ConnectClicked(func() { win.Close() })
@@ -33,25 +34,58 @@ func showLogDialog(parent *gtk.ApplicationWindow, w *window) {
 	win.Present()
 }
 
-// logText renders the current logbuf contents, with a placeholder when empty.
-func logText() string {
-	text := strings.Join(logbuf.Lines(), "\n")
+// logText renders the layout state plus the current logbuf contents, with a
+// placeholder when empty.
+func logText(w *window) string {
+	lines := make([]string, 0, 2+len(logbuf.Lines()))
 
-	if text == "" {
-		return "No diagnostic events recorded yet."
+	lines = append(lines, layoutState(w), "")
+	lines = append(lines, logbuf.Lines()...)
+
+	text := strings.Join(lines, "\n")
+
+	if len(logbuf.Lines()) == 0 {
+		text += "\nNo diagnostic events recorded yet."
 	}
 
 	return text
 }
 
+// layoutState summarizes every tab and pane widget state: mapped status and
+// allocation, so a wedged (black, dead) pane is visible at a glance.
+func layoutState(w *window) string {
+	var b strings.Builder
+
+	b.WriteString("== layout ==")
+
+	for i, tab := range w.tabs {
+		for _, id := range tab.area.tree.Leaves() {
+			widget := tab.area.widgets[id]
+
+			if widget == nil {
+				fmt.Fprintf(&b, "\ntab %d pane %d: WIDGET MISSING", i+1, id)
+
+				continue
+			}
+
+			bw := gtk.BaseWidget(widget)
+
+			fmt.Fprintf(&b, "\ntab %d pane %d: mapped=%v alloc=%dx%d",
+				i+1, id, bw.Mapped(), bw.Width(), bw.Height())
+		}
+	}
+
+	return b.String()
+}
+
 // logDialogContent builds the scrollable log view plus footer buttons.
-func logDialogContent() (*gtk.Box, *gtk.Button, *gtk.Button) {
+func logDialogContent(w *window) (*gtk.Box, *gtk.Button, *gtk.Button) {
 	view := gtk.NewTextView()
 
 	view.SetMonospace(true)
 	view.SetEditable(false)
 	view.SetCursorVisible(false)
-	view.Buffer().SetText(logText())
+	view.Buffer().SetText(logText(w))
 
 	scroll := gtk.NewScrolledWindow()
 

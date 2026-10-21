@@ -234,6 +234,10 @@ func (w *window) selectTab(i int) {
 	t.label.AddCSSClass("bterm-tab-active")
 	w.stack.SetVisibleChild(t.area.root)
 
+	// the page may already be mapped (e.g. re-selecting the current tab),
+	// in which case no map signal fires to trigger the wedged-layout check
+	t.area.scheduleLayoutVerify()
+
 	title := t.title
 
 	if title == "" {

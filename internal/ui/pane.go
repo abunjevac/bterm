@@ -7,6 +7,7 @@ import (
 	"github.com/diamondburned/gotk4/pkg/gdk/v4"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 
+	"github.com/abunjevac/bterm/internal/logbuf"
 	"github.com/abunjevac/bterm/internal/terminal"
 	"github.com/abunjevac/bterm/internal/ui/panetree"
 )
@@ -53,6 +54,11 @@ func newPaneArea(w *window, firstTerm terminal.Terminal) *paneArea {
 
 	pa.rebuild()
 
+	// some occlusion paths (window lock, hidden tab rebuild) can leave a
+	// pane's terminal widget with a permanently zero allocation: it stays
+	// mapped but paints nothing, looking like a black, dead tab
+	pa.root.ConnectMap(pa.scheduleLayoutVerify)
+
 	return pa
 }
 
@@ -67,6 +73,8 @@ func (pa *paneArea) allocID() int {
 // registerTerm stores a terminal and wires its lifecycle callbacks.
 func (pa *paneArea) registerTerm(id int, t terminal.Terminal) {
 	pa.terms[id] = t
+
+	logbuf.Logf("pane %d: registered, shell pid %d", id, t.ShellPID())
 
 	w := t.Widget()
 
@@ -143,6 +151,8 @@ func (pa *paneArea) closeFocused() {
 
 // closeID removes the pane with id, updating the model and widget tree.
 func (pa *paneArea) closeID(id int) {
+	logbuf.Logf("pane %d: closed", id)
+
 	pa.tree.Close(id)
 
 	delete(pa.terms, id)
@@ -296,6 +306,63 @@ func (pa *paneArea) installFontScroll(id int, widget gtk.Widgetter) {
 	})
 
 	gtk.BaseWidget(widget).AddController(scroll)
+}
+
+// layoutVerifyDelay is how long after a map event to wait before checking
+// the layout, so GTK has finished the allocation pass.
+const layoutVerifyDelay = 250
+
+// scheduleLayoutVerify defers a wedged-layout check to the next allocation pass.
+func (pa *paneArea) scheduleLayoutVerify() {
+	glib.TimeoutAdd(layoutVerifyDelay, func() bool {
+		pa.verifyLayout()
+
+		return false
+	})
+}
+
+// verifyLayout repairs a wedged layout. Normally every terminal widget that
+// is mapped is allocated a real size by its GtkPaned/GtkBox parents. But
+// when the pane tree is rebuilt while the page is unmapped (hidden tab,
+// locked screen), GTK can leave a terminal permanently zero-allocated: it
+// stays mapped yet paints nothing — a black, unresponsive tab. Rebuilding
+// the widget tree while mapped reapplies a fresh allocation pass.
+func (pa *paneArea) verifyLayout() {
+	root := gtk.BaseWidget(pa.root)
+
+	if !root.Mapped() || root.Width() == 0 {
+		return
+	}
+
+	for _, id := range pa.tree.Leaves() {
+		w := pa.widgets[id]
+
+		if w == nil {
+			logbuf.Logf("pane %d: widget missing from mapped page; rebuilding layout", id)
+
+			pa.repairLayout()
+
+			return
+		}
+
+		bw := gtk.BaseWidget(w)
+
+		if bw.Mapped() && (bw.Width() == 0 || bw.Height() == 0) {
+			logbuf.Logf("pane %d: zero allocation (%dx%d) on mapped page; rebuilding layout",
+				id, bw.Width(), bw.Height())
+
+			pa.repairLayout()
+
+			return
+		}
+	}
+}
+
+// repairLayout rebuilds the pane widget tree and forces a fresh layout pass.
+func (pa *paneArea) repairLayout() {
+	pa.rebuild()
+
+	gtk.BaseWidget(pa.root).QueueResize()
 }
 
 // rebuild replaces the child of pa.root with a freshly-built widget tree
