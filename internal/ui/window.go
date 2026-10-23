@@ -152,6 +152,12 @@ func (w *window) applyNewConfig(old, next config.Config) { //nolint:cyclop // li
 		w.setTimersVisible(next.ShowTimers)
 	}
 
+	if next.ShowStatusbar != old.ShowStatusbar {
+		for _, tab := range w.tabs {
+			tab.area.setStatusbarsVisible(next.ShowStatusbar)
+		}
+	}
+
 	for _, tab := range w.tabs {
 		for _, t := range tab.area.terms {
 			if fontChanged {

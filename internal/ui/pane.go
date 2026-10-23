@@ -17,6 +17,7 @@ type paneArea struct {
 	tree    *panetree.Tree
 	terms   map[int]terminal.Terminal
 	widgets map[int]gtk.Widgetter
+	bars    map[int]*paneStatus
 	root    *gtk.Box
 	nextID  int
 
@@ -37,6 +38,7 @@ func newPaneArea(w *window, firstTerm terminal.Terminal) *paneArea {
 	pa := &paneArea{
 		terms:   make(map[int]terminal.Terminal),
 		widgets: make(map[int]gtk.Widgetter),
+		bars:    make(map[int]*paneStatus),
 		nextID:  1,
 		win:     w,
 	}
@@ -81,7 +83,19 @@ func (pa *paneArea) registerTerm(id int, t terminal.Terminal) {
 	gtk.BaseWidget(w).SetVExpand(true)
 	gtk.BaseWidget(w).SetHExpand(true)
 
-	pa.widgets[id] = w
+	// the pane widget is the terminal stacked over its statusbar strip
+	pane := gtk.NewBox(gtk.OrientationVertical, 0)
+
+	pane.SetVExpand(true)
+	pane.SetHExpand(true)
+	pane.Append(w)
+
+	bar := newPaneStatus(t, func() bool { return pa.terms[id] == t }, pa.win.bundle.Config.ShowStatusbar)
+
+	pane.Append(bar.label)
+
+	pa.bars[id] = bar
+	pa.widgets[id] = pane
 
 	pa.installTerminalContextMenu(id, w)
 	pa.installFontScroll(id, w)
@@ -157,6 +171,7 @@ func (pa *paneArea) closeID(id int) {
 
 	delete(pa.terms, id)
 	delete(pa.widgets, id)
+	delete(pa.bars, id)
 
 	if pa.tree.Empty() {
 		if pa.onEmpty != nil {
@@ -214,6 +229,13 @@ func (pa *paneArea) resizeFocused(d panetree.Direction) {
 	}
 }
 
+// setStatusbarsVisible shows or hides the statusbar strip of every pane.
+func (pa *paneArea) setStatusbarsVisible(visible bool) {
+	for _, bar := range pa.bars {
+		bar.setVisible(visible)
+	}
+}
+
 // focusedTerminal returns the terminal for the focused pane, or nil.
 func (pa *paneArea) focusedTerminal() terminal.Terminal {
 	return pa.terms[pa.tree.Focused()]
@@ -221,11 +243,12 @@ func (pa *paneArea) focusedTerminal() terminal.Terminal {
 
 // grabFocus gives keyboard focus to the focused pane's widget.
 func (pa *paneArea) grabFocus() {
-	w := pa.widgets[pa.tree.Focused()]
-	if w == nil {
+	t := pa.terms[pa.tree.Focused()]
+	if t == nil {
 		return
 	}
 
+	w := t.Widget()
 	target := gtk.BaseWidget(w)
 
 	if sw, ok := w.(*gtk.ScrolledWindow); ok {

@@ -27,6 +27,7 @@ type Config struct {
 	Scrollback                 int      `toml:"scrollback"`
 	ShowScrollbar              bool     `toml:"show_scrollbar"`
 	ShowTimers                 bool     `toml:"show_timers"`
+	ShowStatusbar              bool     `toml:"show_statusbar"`
 	DetectHyperlinks           bool     `toml:"detect_hyperlinks"`
 	WindowColumns              int      `toml:"window_columns"`
 	WindowRows                 int      `toml:"window_rows"`

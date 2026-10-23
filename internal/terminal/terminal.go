@@ -15,6 +15,21 @@ type Notification struct {
 	Message string
 }
 
+// Stats is a point-in-time snapshot of a terminal's I/O activity.
+type Stats struct {
+	Columns int
+	Rows    int
+
+	// BytesIn counts bytes sent to the shell, BytesOut bytes received from it
+	BytesIn  uint64
+	BytesOut uint64
+
+	// LastInput holds the first bytes of the latest chunk sent to the shell,
+	// exactly as the shell received them; LastInputLen is that chunk's full size
+	LastInput    []byte
+	LastInputLen int
+}
+
 // Terminal is one shell-backed terminal widget.
 //
 //nolint:interfacebloat // intentionally comprehensive; splitting would fragment a cohesive abstraction
@@ -39,6 +54,7 @@ type Terminal interface {
 	OnChildExited(fn func(status int))
 	ShellPID() int
 	ForegroundPGID() (int, error)
+	Stats() Stats
 }
 
 // Factory creates new terminals. The VTE implementation provides one.

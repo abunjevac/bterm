@@ -28,6 +28,7 @@ type configForm struct {
 	scrollbackSpin          *gtk.SpinButton
 	scrollbarSwitch         *gtk.Switch
 	timersSwitch            *gtk.Switch
+	statusbarSwitch         *gtk.Switch
 	detectHyperlinksSwitch  *gtk.Switch
 	widthSpin               *gtk.SpinButton
 	heightSpin              *gtk.SpinButton
@@ -81,6 +82,7 @@ func (f *configForm) collect(base config.Config) config.Config { //nolint:cyclop
 	next.Scrollback = int(f.scrollbackSpin.Value())
 	next.ShowScrollbar = f.scrollbarSwitch.Active()
 	next.ShowTimers = f.timersSwitch.Active()
+	next.ShowStatusbar = f.statusbarSwitch.Active()
 	next.DetectHyperlinks = f.detectHyperlinksSwitch.Active()
 	next.WindowColumns = int(f.widthSpin.Value())
 	next.WindowRows = int(f.heightSpin.Value())
@@ -187,10 +189,16 @@ func buildConfigForm(cfg config.Config) (*gtk.Box, configForm) { //nolint:funlen
 	f.timersSwitch.SetActive(cfg.ShowTimers)
 	f.timersSwitch.SetHAlign(gtk.AlignStart)
 
+	f.statusbarSwitch = gtk.NewSwitch()
+
+	f.statusbarSwitch.SetActive(cfg.ShowStatusbar)
+	f.statusbarSwitch.SetHAlign(gtk.AlignStart)
+
 	appearanceGrid := cfgGrid()
 
 	cfgAttach(appearanceGrid, 0, "Theme", f.themeDD)
 	cfgAttach(appearanceGrid, 1, "Show timers", f.timersSwitch)
+	cfgAttach(appearanceGrid, 2, "Show pane statusbar", f.statusbarSwitch)
 
 	// shell
 	f.shellEntry = cfgEntry(cfg.Shell, "auto-detect from $SHELL")

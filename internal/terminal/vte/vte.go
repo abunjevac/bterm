@@ -43,6 +43,14 @@ type Terminal struct {
 	columns int
 	rows    int
 
+	// livePTYSize is the pty size last seen by syncBackendSize, packed as
+	// columns<<32 | rows; zero until the first sync
+	livePTYSize atomic.Uint64
+
+	bytesIn   atomic.Uint64
+	bytesOut  atomic.Uint64
+	lastInput atomic.Pointer[inputSample]
+
 	shellPID int
 
 	kitty kittyParser
@@ -55,6 +63,15 @@ type Terminal struct {
 
 	detectHyperlinks bool
 	urlMatchTag      int
+}
+
+// inputSampleMax caps how many bytes of the latest input chunk are kept for display.
+const inputSampleMax = 16
+
+// inputSample is the head of one chunk sent to the shell, plus its full length.
+type inputSample struct {
+	head []byte
+	n    int
 }
 
 //nolint:gochecknoglobals
@@ -156,6 +173,28 @@ func (t *Terminal) Spawn(workingDir, shell string, args []string, cb terminal.Sp
 	logbuf.Logf("term %d: spawned pid %d in %q", t.id, spawn.pid, workingDir)
 
 	cb(int(spawn.pid), nil)
+}
+
+// Stats returns the terminal's I/O counters and the latest input chunk.
+func (t *Terminal) Stats() terminal.Stats {
+	st := terminal.Stats{
+		Columns:  t.columns,
+		Rows:     t.rows,
+		BytesIn:  t.bytesIn.Load(),
+		BytesOut: t.bytesOut.Load(),
+	}
+
+	if packed := t.livePTYSize.Load(); packed != 0 {
+		st.Columns = int(packed >> 32)
+		st.Rows = int(packed & 0xffffffff)
+	}
+
+	if s := t.lastInput.Load(); s != nil {
+		st.LastInput = s.head
+		st.LastInputLen = s.n
+	}
+
+	return st
 }
 
 // SetFont applies a Pango font description (e.g. family="Monospace", size=12).
@@ -355,6 +394,16 @@ func (t *Terminal) ForegroundPGID() (int, error) {
 	return int(pgrp), nil
 }
 
+// recordInput accounts for one chunk of bytes sent to the shell.
+func (t *Terminal) recordInput(data []byte) {
+	t.bytesIn.Add(uint64(len(data)))
+
+	t.lastInput.Store(&inputSample{
+		head: append([]byte(nil), data[:min(len(data), inputSampleMax)]...),
+		n:    len(data),
+	})
+}
+
 // installLinkClick attaches a Ctrl+click gesture that opens the hyperlink or
 // URL under the pointer. Non-Ctrl clicks are denied so VTE keeps its normal
 // selection behavior.
@@ -463,6 +512,8 @@ func (t *Terminal) copyFrontendToBackend() {
 		n, err := t.frontend.Read(buf)
 
 		if n > 0 {
+			t.recordInput(buf[:n])
+
 			if werr := t.writeBackend(buf[:n]); unexpectedWriteErr(werr) && !loggedWriteErr {
 				loggedWriteErr = true
 
@@ -496,6 +547,8 @@ func (t *Terminal) copyBackendToFrontend() {
 		n, err := t.backend.Read(buf)
 
 		if n > 0 {
+			t.bytesOut.Add(uint64(n))
+
 			loggedWriteErr = t.forwardOutput(&parser, buf[:n], loggedWriteErr)
 		}
 
@@ -592,6 +645,8 @@ func (t *Terminal) syncBackendSize() {
 		lastColumns = goColumns
 
 		lastRows = goRows
+
+		t.livePTYSize.Store(uint64(goColumns)<<32 | uint64(goRows))
 
 		C.vteSetPtySize(C.int(t.backend.Fd()), columns, rows)
 	}
