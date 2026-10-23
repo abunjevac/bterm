@@ -2,10 +2,10 @@
 #include <vte/vte.h>
 
 typedef struct {
-    int pid;
-    int frontend_slave_fd;
-    int backend_master_fd;
-    char *err_msg;
+  int pid;
+  int frontend_slave_fd;
+  int backend_master_fd;
+  char *err_msg;
 } BtermProxySpawn;
 
 extern void goVteChildExited(int termID, int status);
