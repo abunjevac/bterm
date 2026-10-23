@@ -23,6 +23,20 @@ tasks:
     cmds:
       - go generate ./internal/assets
 
+  compile-commands:
+    desc: Generate compile_commands.json so clangd (Zed) can resolve VTE/GTK headers in C files
+    sources:
+      - internal/terminal/vte/vte_bridge.c
+    generates:
+      - compile_commands.json
+    cmds:
+      - |
+        set -e
+        jq -n --arg dir "$PWD" --arg file internal/terminal/vte/vte_bridge.c \
+          --arg flags "$(pkg-config --cflags vte-2.91-gtk4)" \
+          '[{directory: $dir, file: $file, arguments: (["cc", "-c", $file] + ($flags | split(" ") | map(select(. != ""))))}]' \
+          > compile_commands.json
+
   build:
     desc: Build bterm binary
     vars:

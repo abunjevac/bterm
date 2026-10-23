@@ -238,6 +238,16 @@ task check    # lint + test + osv-scanner
 task tidy     # go mod tidy
 ```
 
+### Editor setup (clangd / Zed)
+
+Editors that use clangd for the C sources (e.g. Zed) report `'vte/vte.h' file not found`, because clangd does not see the pkg-config include flags that cgo uses. Generate a compilation database once after cloning, and again after upgrading VTE or GTK:
+
+```bash
+task compile-commands
+```
+
+This writes `compile_commands.json` (requires `jq` and `libvte-2.91-gtk4-dev`). The file is machine-specific and gitignored; restart the editor's language server afterwards.
+
 ---
 
 ## License
