@@ -347,6 +347,14 @@ func (pa *paneArea) verifyLayout() {
 
 		bw := gtk.BaseWidget(w)
 
+		if bw.Parent() == nil {
+			logbuf.Logf("pane %d: widget detached from layout; rebuilding layout", id)
+
+			pa.repairLayout()
+
+			return
+		}
+
 		if bw.Mapped() && (bw.Width() == 0 || bw.Height() == 0) {
 			logbuf.Logf("pane %d: zero allocation (%dx%d) on mapped page; rebuilding layout",
 				id, bw.Width(), bw.Height())
@@ -368,14 +376,14 @@ func (pa *paneArea) repairLayout() {
 // rebuild replaces the child of pa.root with a freshly-built widget tree
 // that mirrors the current panetree state.
 func (pa *paneArea) rebuild() {
-	// unparent all terminal widgets first so they can be re-parented into
-	// the new GtkPaned tree. Without this, GTK rejects SetStartChild/SetEndChild
-	// on widgets that still have a parent from the previous layout
-	for _, w := range pa.widgets {
-		gtk.BaseWidget(w).Unparent()
-	}
-
+	// detach all terminal widgets through their containers so each GtkPaned
+	// clears its own child pointers. A raw Unparent() leaves the old paned
+	// pointing at a widget that has since been re-parented into the new
+	// tree; when the old paned is finalized it unparents that widget again,
+	// silently dropping the pane from the new layout (a black, dead pane)
 	if child := pa.root.FirstChild(); child != nil {
+		detachPaned(child)
+
 		pa.root.Remove(child)
 	}
 
@@ -396,6 +404,26 @@ func (pa *paneArea) rebuild() {
 	if child != nil {
 		pa.root.Append(child)
 	}
+}
+
+// detachPaned empties every GtkPaned in the subtree rooted at w, leaving the
+// terminal widgets unparented and free to be attached to a new tree.
+func detachPaned(w gtk.Widgetter) {
+	paned, ok := w.(*gtk.Paned)
+	if !ok {
+		return
+	}
+
+	if c := paned.StartChild(); c != nil {
+		detachPaned(c)
+	}
+
+	if c := paned.EndChild(); c != nil {
+		detachPaned(c)
+	}
+
+	paned.SetStartChild(nil)
+	paned.SetEndChild(nil)
 }
 
 // isHintLeaf reports whether d is the newly-created pane from the last split,
