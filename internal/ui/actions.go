@@ -128,7 +128,7 @@ func expandCWDArgs(args []string, cwd string) []string {
 
 // openNewWindow opens another application window using the active terminal directory.
 func (w *window) openNewWindow() {
-	win := newWindow(w.app, w.bundle, w.activeCWD())
+	win := newWindow(w.app, w.bundle, w.activeCWD(), nil)
 
 	win.Present()
 }

@@ -15,10 +15,14 @@ import (
 )
 
 func main() {
+	args, command := splitExec(os.Args)
+
 	cmd := &cli.Command{
 		Name:    "bterm",
 		Version: version.Version,
 		Usage:   "an opinionated GTK4 + VTE terminal emulator",
+		Description: "Use -e COMMAND [ARGS...] as the last option to run a command instead of the shell;\n" +
+			"everything after -e belongs to the command.",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "config",
@@ -31,7 +35,9 @@ func main() {
 				Usage:   "path to working dir (default: current dir)",
 			},
 		},
-		Action: run,
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			return run(ctx, cmd, command)
+		},
 		Commands: []*cli.Command{
 			{
 				Name:  "keymap",
@@ -53,14 +59,14 @@ func main() {
 		},
 	}
 
-	if err := cmd.Run(context.Background(), os.Args); err != nil {
+	if err := cmd.Run(context.Background(), args); err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "bterm: %v\n", err)
 
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context, cmd *cli.Command) error {
+func run(ctx context.Context, cmd *cli.Command, command []string) error {
 	cfgDir, err := config.ResolveDir(cmd.String("config"))
 	if err != nil {
 		return fmt.Errorf("resolve config dir: %w", err)
@@ -71,7 +77,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	return cli.Exit("", ui.Run(ctx, bundle, cmd.String("working-directory")))
+	return cli.Exit("", ui.Run(ctx, bundle, cmd.String("working-directory"), command))
 }
 
 func keymapCommand(ctx context.Context, cmd *cli.Command) error {
@@ -97,4 +103,17 @@ func keymapCommand(ctx context.Context, cmd *cli.Command) error {
 	fmt.Fprint(os.Stdout, keymap.DefaultKeymapTOML)
 
 	return nil
+}
+
+// splitExec separates "-e COMMAND [ARGS...]" from the bterm arguments. Like xterm's -e
+// it must come last: everything after it is passed to the command untouched, so the
+// command's own flags never reach the bterm flag parser.
+func splitExec(args []string) ([]string, []string) {
+	for i, a := range args {
+		if a == "-e" || a == "--execute" {
+			return args[:i], args[i+1:]
+		}
+	}
+
+	return args, nil
 }

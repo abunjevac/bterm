@@ -13,9 +13,10 @@ import (
 	"github.com/abunjevac/bterm/internal/config"
 )
 
-// Run starts the GTK application and blocks until the window closes.
-// Returns the GTK exit code. The caller is responsible for calling os.Exit.
-func Run(ctx context.Context, bundle *config.Bundle, workingDir string) int {
+// Run starts the GTK application and blocks until the window closes. A non-empty
+// command runs in the first terminal instead of the shell. Returns the GTK exit
+// code. The caller is responsible for calling os.Exit.
+func Run(ctx context.Context, bundle *config.Bundle, workingDir string, command []string) int {
 	_ = ctx
 
 	iconResource, err := gio.NewResourceFromData(glib.NewBytes(assets.IconsGResource))
@@ -28,7 +29,7 @@ func Run(ctx context.Context, bundle *config.Bundle, workingDir string) int {
 	app := gtk.NewApplication("io.github.abunjevac.bterm", gio.ApplicationNonUnique)
 
 	app.ConnectActivate(func() { //nolint:contextcheck // GTK activation callback has no context parameter; downstream notification subprocess uses background context.
-		w := newWindow(app, bundle, workingDir)
+		w := newWindow(app, bundle, workingDir, command)
 
 		w.Present()
 	})

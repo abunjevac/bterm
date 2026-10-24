@@ -23,6 +23,8 @@ type window struct {
 	keys   *keymap.Layout
 
 	workingDir string
+	// command runs in the first terminal instead of the shell (bterm -e)
+	command []string
 
 	tabs        []*tab
 	active      int
@@ -44,8 +46,9 @@ type window struct {
 	newTerm         terminal.Factory
 }
 
-func newWindow(app *gtk.Application, bundle *config.Bundle, workingDir string) *gtk.ApplicationWindow {
+func newWindow(app *gtk.Application, bundle *config.Bundle, workingDir string, command []string) *gtk.ApplicationWindow {
 	w := newEmptyWindow(app, bundle, workingDir)
+	w.command = command
 
 	w.newTabEnd()
 
@@ -119,7 +122,15 @@ func (w *window) configureAndSpawn(t terminal.Terminal, workingDir string) {
 
 	t.OnOpenLink(w.openLink)
 
-	t.Spawn(workingDir, shell, shellArgs(cfg), func(_ int, _ error) {})
+	args := shellArgs(cfg)
+
+	// a command from -e replaces the shell of the first terminal only
+	if len(w.command) > 0 {
+		shell, args = w.command[0], w.command[1:]
+		w.command = nil
+	}
+
+	t.Spawn(workingDir, shell, args, func(_ int, _ error) {})
 }
 
 // applyNewConfig applies live changes from a preferences save. Font and theme

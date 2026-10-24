@@ -98,6 +98,24 @@ task uninstall-desktop
 
 ---
 
+## Command-line options
+
+| Option                      | Purpose                                                        |
+|-----------------------------|----------------------------------------------------------------|
+| `-w`, `--working-directory` | Start in this directory                                        |
+| `-c`, `--config`            | Use another config directory                                   |
+| `-e COMMAND [ARGS...]`      | Run a command instead of the shell; must be the last option    |
+
+```bash
+bterm -w ~/src -e htop
+bterm -e ssh -t nas 'cd /srv && exec "$SHELL" -l'
+```
+
+Everything after `-e` belongs to the command, so its own flags are passed through untouched. The pane closes when
+the command exits.
+
+---
+
 ## Configuration
 
 bterm writes its configuration to `~/.config/bterm/` on first launch.
